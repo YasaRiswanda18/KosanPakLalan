@@ -271,7 +271,7 @@
                             <span>Penghuni Terdaftar Aktif</span>
                         </div>
                         <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                            Halo, {{ Auth::user()->name }}! 👋
+                            Halo, {{ Auth::user()->name }}! 
                         </h1>
                         <p class="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
                             Selamat datang di portal penghuni Kosan Pak Lalan. Pantau status pembayaran sewa kamar, kelola profil, dan laporkan keluhan fasilitas kos secara langsung.
