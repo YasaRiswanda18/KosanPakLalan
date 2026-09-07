@@ -19,7 +19,7 @@ return new class extends Migration
             
             $table->string('bulan_tagihan'); // Contoh: "Agustus 2026"
             $table->integer('jumlah_bayar');
-            $table->enum('status', ['Mengunggu Konfirmasi', 'Lunas', 'Belum Lunas'])->default('Belum Lunas');
+            $table->enum('status', ['Belum Lunas', 'Menunggu Konfirmasi', 'Lunas', 'Ditolak'])->default('Belum Lunas');
             $table->date('tanggal_bayar')->nullable(); // Kosong kalau belum bayar
             
             $table->timestamps();
