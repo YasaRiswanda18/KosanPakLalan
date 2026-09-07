@@ -45,7 +45,7 @@ class TagihanController extends Controller
             // Update tagihan: simpan path foto dan ubah status
             $tagihan->update([
                 'bukti_bayar' => $fotoPath,
-                'status'      => 'menunggu konfirmasi'
+                'status'      => 'Menunggu Konfirmasi'
             ]);
         }
 

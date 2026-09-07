@@ -54,7 +54,7 @@ class TagihanController extends Controller
 
         $tagihans = $query->get();
         $totalPemasukan = $tagihans->where('status', 'Lunas')->sum('jumlah_bayar');
-        $totalTunggakan = $tagihans->whereIn('status', ['Belum Lunas', 'menunggu konfirmasi'])->sum('jumlah_bayar');
+        $totalTunggakan = $tagihans->whereIn('status', ['Belum Lunas', 'Menunggu Konfirmasi'])->sum('jumlah_bayar');
 
         // 🛡️ FITUR SMART DROPDOWN 🛡️
         $periodeSekarang = $this->getPeriodeSekarang();
