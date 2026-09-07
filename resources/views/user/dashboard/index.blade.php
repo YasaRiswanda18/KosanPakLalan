@@ -573,8 +573,8 @@
                                     <!-- Bank BCA -->
                                     <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center justify-between">
                                         <div>
-                                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bank BCA</span>
-                                            <span id="norekBca" class="font-mono text-sm font-extrabold text-slate-900 select-all">1234 5678 90</span>
+                                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">No Dana</span>
+                                            <span id="norekBca" class="font-mono text-sm font-extrabold text-slate-900 select-all">082110163205</span>
                                             <span class="text-[11px] text-slate-500 block">a.n. Pak Lalan</span>
                                         </div>
                                         <button type="button" onclick="copyText('1234567890', this)" class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200 shadow-2xs transition-all shrink-0">
