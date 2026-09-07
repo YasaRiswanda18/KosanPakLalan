@@ -83,10 +83,5 @@ RUN chown -R www-data:www-data \
 # FrankenPHP configuration
 COPY Caddyfile /etc/frankenphp/Caddyfile
 
-
-# Vercel provides PORT
-ENV SERVER_NAME=:80
-
-
 # Start FrankenPHP
 CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]
