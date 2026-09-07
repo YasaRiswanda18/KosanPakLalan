@@ -1,0 +1,92 @@
+# ==========================================
+# Stage 1 — Build frontend
+# ==========================================
+FROM node:24-alpine AS frontend
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci
+
+COPY resources ./resources
+COPY public ./public
+COPY vite.config.js ./
+
+RUN npm run build
+
+
+# ==========================================
+# Stage 2 — Laravel + FrankenPHP
+# ==========================================
+FROM dunglas/frankenphp:php8.3-bookworm
+
+WORKDIR /app
+
+# System dependencies + PHP extensions
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libzip-dev \
+    libicu-dev \
+    libonig-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    && docker-php-ext-install \
+        pdo_mysql \
+        mbstring \
+        zip \
+        intl \
+        opcache \
+        gd \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+
+# Laravel application (copy before composer install for post-scripts)
+COPY . .
+
+
+# Composer dependencies
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader
+
+
+# Frontend build
+COPY --from=frontend /app/public/build ./public/build
+
+
+# Laravel cache cleanup
+RUN php artisan config:clear \
+    && php artisan route:clear \
+    && php artisan view:clear
+
+
+# Storage
+RUN php artisan storage:link || true
+
+
+# Permissions
+RUN chown -R www-data:www-data \
+    /app/storage \
+    /app/bootstrap/cache
+
+
+# FrankenPHP configuration
+COPY Caddyfile /etc/frankenphp/Caddyfile
+
+
+# Vercel provides PORT
+ENV SERVER_NAME=:80
+
+
+# Start FrankenPHP
+CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]
