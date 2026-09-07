@@ -144,7 +144,7 @@
                                 {{ $notifKeluhanAdmin }}
                             </span>
                         @endif
-                    </a>>
+                    </a>
 
                     <div class="pt-4 px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                         Sistem
