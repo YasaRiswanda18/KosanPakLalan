@@ -1,490 +1,999 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Manajemen Kamar - Kosan Pak Lalan</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    <!-- FONT KOMIK DARI GOOGLE -->
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* Pengaturan Font Dasar */
-        body { font-family: 'Comic Neue', cursive; font-weight: 700; }
-        .font-komik { font-family: 'Bangers', cursive; letter-spacing: 2px; }
-        
-        /* Background Halftone Kertas Komik */
-        .bg-halftone {
-            background-color: #f8fafc;
-            background-image: radial-gradient(#94a3b8 2px, transparent 2px);
-            background-size: 24px 24px;
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FAFAFA;
         }
 
-        /* Animasi Pop-up Komik */
-        .animate-pop { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.8); }
-        @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
-        
-        .delay-100 { animation-delay: 100ms; }
-        .delay-200 { animation-delay: 200ms; }
-        
-        /* Efek Hover Komik */
-        .comic-card { transition: all 0.2s ease-in-out; }
-        .comic-card:hover { transform: translate(-4px, -4px); box-shadow: 12px 12px 0px 0px rgba(0,0,0,1); }
-        .comic-button:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0px 0px rgba(0,0,0,1); }
+        /* Smooth Fade In Animations */
+        .animate-fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        /* Input Komik */
-        .comic-input { border: 3px solid black; box-shadow: 4px 4px 0px 0px rgba(0,0,0,1); transition: all 0.2s; }
-        .comic-input:focus { outline: none; transform: translate(-2px, -2px); box-shadow: 6px 6px 0px 0px rgba(0,0,0,1); background-color: #fef08a; }
+        .delay-1 { animation-delay: 50ms; }
+        .delay-2 { animation-delay: 100ms; }
+        .delay-3 { animation-delay: 150ms; }
+        .delay-4 { animation-delay: 200ms; }
 
-        /* Modal Animasi Komik */
-        .modal-enter { opacity: 0; transform: scale(0.9) rotate(-2deg); }
-        .modal-enter-active { opacity: 1; transform: scale(1) rotate(0); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .modal-leave { opacity: 1; transform: scale(1); }
-        .modal-leave-active { opacity: 0; transform: scale(0.9) rotate(2deg); transition: all 0.2s ease-in; }
+        /* Smooth Active Status Badge Pulse & Glow */
+        @keyframes statusPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); transform: scale(1); }
+            50% { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); transform: scale(1.02); }
+        }
+        .animate-active-badge { animation: statusPulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #fff; border-left: 2px solid #000; }
-        ::-webkit-scrollbar-thumb { background: #000; border-radius: 0px; }
+        /* Modal Transitions */
+        .modal-enter { opacity: 0; transform: scale(0.96) translateY(8px); }
+        .modal-enter-active { opacity: 1; transform: scale(1) translateY(0); transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-leave { opacity: 1; transform: scale(1) translateY(0); }
+        .modal-leave-active { opacity: 0; transform: scale(0.96) translateY(8px); transition: all 0.2s cubic-bezier(0.4, 0, 1, 1); }
+
+        /* Custom Modern Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #F1F5F9; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
     </style>
 </head>
 
-<body class="bg-halftone text-black antialiased overflow-hidden selection:bg-yellow-300 selection:text-black">
+<body class="bg-[#FAFAFA] text-slate-800 antialiased selection:bg-slate-900 selection:text-white overflow-hidden min-h-screen">
     
-    <div class="flex h-screen w-full">
+    <div class="flex h-screen w-full overflow-hidden">
         
-        <!-- ========================================== -->
-        <!-- SIDEBAR ADMIN (COMIC STYLE) -->
-        <!-- ========================================== -->
-        <aside class="w-64 bg-white flex flex-col transition-all duration-300 z-30 hidden md:flex border-r-4 border-black shadow-[8px_0_0_0_rgba(0,0,0,1)]">
-            <div class="h-20 flex items-center justify-center px-6 border-b-4 border-black bg-red-500 relative overflow-hidden">
-                <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: repeating-linear-gradient(45deg, #000 0, #000 2px, transparent 2px, transparent 8px);"></div>
-                <div class="text-center transform rotate-2 hover:rotate-0 transition-transform cursor-pointer relative z-10">
-                    <h1 class="font-komik text-3xl text-white drop-shadow-[2px_2px_0_#000]">KOSAN LALAN</h1>
-                    <span class="bg-yellow-300 text-black text-[10px] px-2 py-1 font-bold uppercase tracking-widest border-2 border-black rounded-full">Markas Admin</span>
+        <!-- SIDEBAR BACKDROP (Mobile only) -->
+        <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity duration-300"></div>
+
+        <!-- SIDEBAR ADMIN (MODERN MINIMALIST) -->
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-72 bg-white border-r border-slate-200/80 flex flex-col justify-between h-full z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-xl lg:shadow-none">
+            <div class="flex flex-col flex-1 min-h-0">
+                <!-- Brand Header -->
+                <div class="h-20 flex items-center justify-between px-6 border-b border-slate-100">
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-base shadow-sm group-hover:bg-slate-800 transition-colors shrink-0">KL</div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-base text-slate-900 tracking-tight leading-none group-hover:text-slate-700 transition-colors">KOSAN LALAN</span>
+                            <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Portal Admin</span>
+                        </div>
+                    </a>
+                    <button type="button" onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
                 </div>
+
+               <!-- Navigasi Menu -->
+                <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+                    
+                    <!-- RUMUS NOTIFIKASI ADMIN -->
+                    @php
+                        $notifTagihanAdmin = \App\Models\Tagihan::where('status', 'Menunggu Konfirmasi')->count();
+                        $notifKeluhanAdmin = \App\Models\Pengaduan::where('status', 'Pending')->count();
+                    @endphp
+
+                    <div class="px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        Menu Utama
+                    </div>
+
+                    <!-- Dashboard -->
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.dashboard') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+                    
+                    <!-- Manajemen Kamar (Aktif) -->
+                    <a href="{{ route('admin.kamar.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.kamar.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.kamar.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 21v-4.875A2.625 2.625 0 0110.875 13.5h2.25a2.625 2.625 0 012.625 2.625V21M3 21h18M4.5 3h15a1.5 1.5 0 011.5 1.5v16.5H3V4.5A1.5 1.5 0 014.5 3z" />
+                        </svg>
+                        <span>Manajemen Kamar</span>
+                    </a>
+                    
+                    <!-- Data Penghuni -->
+                    <a href="{{ route('admin.penghuni.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.penghuni.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.penghuni.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                        </svg>
+                        <span>Data Penghuni</span>
+                    </a>
+                    
+                    <!-- Tagihan & Kas -->
+                    <a href="{{ route('admin.tagihan.index') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.tagihan.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.tagihan.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6H2.25m0 0v11.25a2.25 2.25 0 002.25 2.25h15m0-15.75H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25zM15.75 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>Tagihan & Kas</span>
+                        </div>
+                        @if($notifTagihanAdmin > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full animate-pulse shadow-xs">
+                                {{ $notifTagihanAdmin }}
+                            </span>
+                        @endif
+                    </a>
+
+                    <!-- Laporan Keluhan -->
+                    <a href="{{ route('admin.pengaduan.index') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.pengaduan.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.pengaduan.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                            </svg>
+                            <span>Laporan Keluhan</span>
+                        </div>
+                        @if($notifKeluhanAdmin > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full animate-pulse shadow-xs">
+                                {{ $notifKeluhanAdmin }}
+                            </span>
+                        @endif
+                    </a>
+
+                    <div class="pt-4 px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        Sistem
+                    </div>
+
+                    <a href="{{ route('admin.akun.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.akun.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.akun.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                        <span>Kelola Akun</span>
+                    </a>
+
+                    <a href="{{ route('admin.pengumuman.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.pengumuman.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.pengumuman.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                        </svg>
+                        <span>Kelola Pengumuman</span>
+                    </a>
+                </nav>
             </div>
-
-            <nav class="flex-1 px-4 py-6 space-y-3 overflow-y-auto bg-white">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-cyan-400 border-black translate-x-1 shadow-[4px_4px_0_0_rgba(0,0,0,1)]' : 'bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)]' }} border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span class="text-lg font-bold">Dashboard</span>
-                </a>
-                
-                <!-- MENU AKTIF DI SINI -->
-                <a href="{{ route('admin.kamar.index') }}" class="flex items-center px-4 py-3 bg-cyan-400 border-black translate-x-1 shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                    <span class="text-lg font-bold">Manajemen Kamar</span>
-                </a>
-                
-                <a href="{{ route('admin.penghuni.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.penghuni.*') ? 'bg-cyan-400 border-black translate-x-1 shadow-[4px_4px_0_0_rgba(0,0,0,1)]' : 'bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)]' }} border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    <span class="text-lg font-bold">Data Penghuni</span>
-                </a>
-                
-                <a href="{{ route('admin.tagihan.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.tagihan.*') ? 'bg-cyan-400 border-black translate-x-1 shadow-[4px_4px_0_0_rgba(0,0,0,1)]' : 'bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)]' }} border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    <span class="text-lg font-bold">Tagihan & Kas</span>
-                </a>
-
-                <a href="{{ route('admin.pengaduan.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.pengaduan.*') ? 'bg-cyan-400 border-black translate-x-1 shadow-[4px_4px_0_0_rgba(0,0,0,1)]' : 'bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)]' }} border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-                    <span class="text-lg font-bold">Laporan Keluhan</span>
-                </a>
-
-                <a href="{{ route('admin.akun.index') }}" class="flex items-center px-4 py-3 {{ request()->routeIs('admin.akun.*') ? 'bg-cyan-400 border-black translate-x-1 shadow-[4px_4px_0_0_rgba(0,0,0,1)]' : 'bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)]' }} border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>
-                    <span class="text-lg font-bold">Kelola Akun</span>
-                </a>
-            </nav>
         </aside>
 
-        <!-- ========================================== -->
         <!-- KONTEN UTAMA -->
-        <!-- ========================================== -->
-        <main class="flex-1 flex flex-col h-screen relative z-10 overflow-hidden">
+        <main class="flex-1 flex flex-col h-screen relative z-10 overflow-hidden min-w-0">
             
-            <header class="h-20 bg-white border-b-4 border-black flex items-center justify-between px-8 z-30 shadow-[0_4px_0_0_rgba(0,0,0,1)] relative">
-                <h2 class="text-2xl font-komik text-black tracking-widest drop-shadow-[1px_1px_0_#fff] mt-1">DENAH & KAMAR 🛏️</h2>
-                
-                <div class="relative">
-                    <button type="button" onclick="toggleDropdown()" id="profilButton" class="flex items-center gap-3 bg-yellow-300 border-2 border-black py-2 px-5 rounded-full shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all focus:outline-none">
-                        @if(Auth::user()->foto_profil)
-                            <img src="{{ asset('storage/profil/' . Auth::user()->foto_profil) }}" alt="Profil" class="w-8 h-8 rounded-full object-cover border-2 border-black shrink-0 bg-white">
-                        @else
-                            <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center border-2 border-black shrink-0">
-                                <span class="text-base font-komik text-black">{{ substr(Auth::user()->name ?? 'P', 0, 1) }}</span>
-                            </div>
-                        @endif
-                        <span class="text-base font-bold text-black uppercase">{{ Auth::user()->name ?? 'Pak Lalan' }}</span>
+            <!-- Topbar (Glass Header) -->
+            <header class="h-20 bg-white/85 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-6 sm:px-8 z-30 sticky top-0">
+                <div class="flex items-center gap-4">
+                    <button type="button" onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
                     </button>
+                    <div>
+                        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                            <a href="{{ route('admin.dashboard') }}" class="hover:text-slate-700 transition-colors">Dashboard</a>
+                            <span>/</span>
+                            <span class="text-slate-700">Manajemen Kamar</span>
+                        </div>
+                        <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight leading-tight mt-0.5">Kelola & Monitoring Kamar</h2>
+                    </div>
+                </div>
 
-                    <div id="profilDropdown" class="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-[6px_6px_0_0_rgba(0,0,0,1)] border-4 border-black overflow-hidden hidden opacity-0 transition-all duration-200 transform origin-top-right scale-95 z-50">
-                        <div class="p-4 border-b-4 border-black bg-cyan-200">
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-black mb-0.5">Masuk sebagai</p>
-                            <p class="text-base font-komik text-black truncate tracking-wide">{{ Auth::user()->username ?? 'admin_lalan' }}</p>
-                        </div>
-                        <div class="py-2 bg-white">
-                            <a href="{{ route('admin.profil.index') }}" class="flex items-center px-4 py-2 text-base font-bold text-black hover:bg-yellow-200 transition-colors group">
-                                <span class="w-2 h-2 rounded-full bg-black mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span> Pengaturan Profil
-                            </a>
-                        </div>
-                        <div class="border-t-4 border-black bg-red-500">
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="w-full flex items-center justify-center px-4 py-3 text-sm font-komik tracking-widest text-white hover:bg-red-600 transition-colors">
-                                    KABUUR! (LOGOUT)
-                                </button>
-                            </form>
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <!-- Tanggal Hari Ini -->
+                    <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-semibold text-slate-600">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                        <span>{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</span>
+                    </div>
+
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button type="button" onclick="toggleDropdown()" id="profilButton" class="flex items-center gap-3 p-1.5 sm:px-3 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs transition-all focus:outline-none">
+                            @if(Auth::user()->foto_profil)
+                                <img src="{{ asset('storage/profil/' . Auth::user()->foto_profil) }}" alt="Profil" class="w-8 h-8 rounded-xl object-cover border border-slate-200 shrink-0 bg-slate-100">
+                            @else
+                                <div class="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                    {{ strtoupper(substr(Auth::user()->name ?? 'P', 0, 1)) }}
+                                </div>
+                            @endif
+                            <div class="hidden sm:flex flex-col text-left">
+                                <span class="text-xs font-bold text-slate-900 leading-tight">{{ Auth::user()->name ?? 'Pak Lalan' }}</span>
+                                <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Administrator</span>
+                            </div>
+                            <svg class="w-4 h-4 text-slate-400 hidden sm:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                        </button>
+
+                        <div id="profilDropdown" class="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200/80 overflow-hidden hidden opacity-0 transition-all duration-200 transform origin-top-right scale-95 z-50">
+                            <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+                                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Masuk Sebagai</p>
+                                <p class="text-sm font-bold text-slate-900 truncate">{{ Auth::user()->name ?? 'Administrator' }}</p>
+                                <p class="text-xs text-slate-500 truncate mt-0.5">&#64;{{ Auth::user()->username ?? 'admin_lalan' }}</p>
+                            </div>
+                            <div class="p-2">
+                                <a href="{{ route('admin.profil.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                                    <span>Pengaturan Profil</span>
+                                </a>
+                            </div>
+                            <div class="p-2 border-t border-slate-100">
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
+                                        <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
+                                        <span>Keluar (Logout)</span>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth relative pb-20">
-                <div class="w-full max-w-6xl mx-auto">
-                    
-                    <!-- ALERT SUCCESS / ERROR -->
-                    @if(session('success'))
-                    <div class="mb-8 p-4 bg-green-400 border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] flex items-start gap-4 animate-pop transform -rotate-1">
-                        <div class="w-10 h-10 rounded-full bg-white border-2 border-black flex items-center justify-center text-black font-komik text-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)]">OK!</div>
-                        <div>
-                            <h4 class="text-xl font-komik text-black tracking-wide">MANTAP BRO!</h4>
-                            <p class="text-base font-bold text-black mt-1">{{ session('success') }}</p>
-                        </div>
+            <!-- Scrollable Content Area -->
+            <div class="flex-1 overflow-y-scroll p-6 sm:p-8 space-y-6">
+                
+                <!-- ALERT NOTIFIKASI SUKSES / ERROR -->
+                @if(session('success'))
+                <div id="alertSuccess" class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm font-semibold flex items-center justify-between gap-3 shadow-xs animate-fade-in">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 text-sm font-bold shadow-xs">✓</span>
+                        <p>{{ session('success') }}</p>
                     </div>
-                    @endif
+                    <button type="button" onclick="document.getElementById('alertSuccess').remove()" class="text-emerald-500 hover:text-emerald-800 p-1.5 rounded-lg hover:bg-emerald-100/60 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                @endif
 
-                    @if($errors->any())
-                    <div class="mb-8 p-4 bg-red-400 border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] flex items-start gap-4 animate-pop transform rotate-1">
-                        <div class="w-10 h-10 rounded-full bg-white border-2 border-black flex items-center justify-center text-black font-komik text-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)]">WTF!</div>
-                        <div>
-                            <h4 class="text-xl font-komik text-white tracking-wide drop-shadow-[1px_1px_0_#000]">Oops! Ada yang salah nih:</h4>
-                            <ul class="text-sm font-bold text-white mt-2 list-disc list-inside bg-black/20 p-2 border-2 border-black rounded">
-                                @foreach($errors->all() as $error) <li>{{ $error }}</li> @endforeach
+                @if($errors->any())
+                <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-sm font-semibold shadow-xs animate-fade-in">
+                    <div class="flex items-start gap-3">
+                        <span class="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 text-sm font-bold shadow-xs">!</span>
+                        <div class="flex-1">
+                            <p class="font-bold">Ada beberapa kesalahan validasi pengisian:</p>
+                            <ul class="mt-1 list-disc list-inside text-xs font-medium text-rose-700 space-y-0.5">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
                             </ul>
                         </div>
                     </div>
-                    @endif
+                </div>
+                @endif
 
-                    <!-- HEADER & TOMBOL TAMBAH KAMAR -->
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 opacity-0 animate-pop">
-                        <div class="bg-white border-4 border-black p-3 rounded-2xl shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-1">
-                            <h3 class="text-2xl font-komik text-black tracking-widest uppercase">DAFTAR KAMAR KOS</h3>
-                            <p class="text-sm text-black font-bold mt-1">Atur harga, tipe, dan status ketersediaan.</p>
-                        </div>
-                        
-                        <button onclick="openModal()" class="w-full sm:w-auto bg-green-400 hover:bg-green-500 text-black border-4 border-black px-5 py-3 rounded-xl font-komik text-xl tracking-widest transition-all shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex items-center justify-center gap-2 comic-button transform -rotate-1">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                            TAMBAH KAMAR BARU!
+                <!-- HEADER BANNER & PRIMARY ACTION -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm animate-fade-in">
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Manajemen Kamar Kos</h1>
+                        <p class="text-sm text-slate-500 mt-1 max-w-xl leading-relaxed">
+                            Konfigurasi nomor unit, tarif bulanan, tipe spesifikasi fasilitas, serta pantau ketersediaan kamar secara komprehensif.
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center gap-3 shrink-0">
+                        <!-- Tombol Update Tarif Massal -->
+                        <button type="button" onclick="openUpdateTarifModal()" class="inline-flex items-center gap-2 px-4 py-3 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-xl shadow-sm border border-slate-200/80 hover:border-slate-300 transition-all duration-200">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Update Tarif Massal</span>
+                        </button>
+
+                        <!-- Tombol Tambah Kamar Baru -->
+                        <button type="button" onclick="openModal()" class="inline-flex items-center gap-2 px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            <span>Tambah Kamar Baru</span>
                         </button>
                     </div>
-
-                    <!-- KARTU STATISTIK MINI (COMIC STYLE) -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8 opacity-0 animate-pop delay-100">
-                        
-                        <!-- Total Kamar -->
-                        <div class="bg-cyan-200 p-6 rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] flex items-center justify-between comic-card">
-                            <div>
-                                <p class="text-sm font-bold text-black uppercase tracking-widest mb-1 border-b-2 border-black inline-block pb-1">TOTAL KAMAR</p>
-                                <h4 class="count-up text-5xl font-komik text-black drop-shadow-[2px_2px_0_#fff] tracking-widest mt-2" data-target="{{ $kamars->count() }}">0</h4>
-                            </div>
-                            <div class="w-16 h-16 rounded-full bg-white text-black border-4 border-black flex items-center justify-center transform -rotate-6">
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                            </div>
-                        </div>
-
-                        <!-- Kamar Terisi -->
-                        <div class="bg-green-300 p-6 rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] flex items-center justify-between comic-card">
-                            <div>
-                                <p class="text-sm font-bold text-black uppercase tracking-widest mb-1 border-b-2 border-black inline-block pb-1">KAMAR TERISI</p>
-                                <h4 class="count-up text-5xl font-komik text-black drop-shadow-[2px_2px_0_#fff] tracking-widest mt-2" data-target="{{ $kamars->where('status', 'Terisi')->count() }}">0</h4>
-                            </div>
-                            <div class="w-16 h-16 rounded-full bg-white text-green-600 border-4 border-black flex items-center justify-center transform rotate-6 animate-pulse">
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                        </div>
-
-                        <!-- Kamar Kosong -->
-                        <div class="bg-yellow-300 p-6 rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] flex items-center justify-between comic-card">
-                            <div>
-                                <p class="text-sm font-bold text-black uppercase tracking-widest mb-1 border-b-2 border-black inline-block pb-1">KAMAR KOSONG</p>
-                                <h4 class="count-up text-5xl font-komik text-red-500 drop-shadow-[2px_2px_0_#000] tracking-widest mt-2" data-target="{{ $kamars->where('status', 'Kosong')->count() }}">0</h4>
-                            </div>
-                            <div class="w-16 h-16 rounded-full bg-white text-black border-4 border-black flex items-center justify-center transform -rotate-12 animate-pulse">
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- TABEL KAMAR (COMIC STYLE) -->
-                    <div class="bg-white rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden opacity-0 animate-pop delay-200 comic-card">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-cyan-400 border-b-4 border-black text-black">
-                                        <th class="py-5 px-6 text-xl font-komik tracking-widest uppercase border-r-4 border-black">NO. KAMAR</th>
-                                        <th class="py-5 px-6 text-xl font-komik tracking-widest uppercase border-r-4 border-black">TIPE & HARGA SEWA</th>
-                                        <th class="py-5 px-6 text-xl font-komik tracking-widest uppercase border-r-4 border-black text-center">STATUS</th>
-                                        <th class="py-5 px-6 text-xl font-komik tracking-widest uppercase border-r-4 border-black">PENGHUNI</th>
-                                        <th class="py-5 px-6 text-xl font-komik tracking-widest uppercase text-right">AKSI</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y-4 divide-black bg-white">
-                                    @foreach($kamars as $kamar)
-                                    <tr class="hover:bg-yellow-50 transition-colors group">
-                                        
-                                        <!-- No Kamar -->
-                                        <td class="py-5 px-6 border-r-4 border-black">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-12 h-12 rounded-xl bg-yellow-300 border-2 border-black flex items-center justify-center text-black font-komik text-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)] group-hover:scale-110 transition-transform">
-                                                    {{ trim(str_ireplace('kamar', '', $kamar->nomor_kamar)) }}
-                                                </div>
-                                                <span class="font-bold text-black text-lg uppercase">{{ $kamar->nomor_kamar }}</span>
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- Tipe & Harga -->
-                                        <td class="py-5 px-6 border-r-4 border-black">
-                                            <div class="flex items-center gap-3">
-                                                @if($kamar->tipe_kamar == 'VIP')
-                                                    <span class="px-2 py-1 bg-red-500 text-white text-xs font-bold border-2 border-black uppercase shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform rotate-2">VIP ⭐️</span>
-                                                @else
-                                                    <span class="px-2 py-1 bg-slate-200 text-black text-xs font-bold border-2 border-black uppercase shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform -rotate-1">STANDAR</span>
-                                                @endif
-                                                <span class="text-xl font-komik text-green-600 drop-shadow-[1px_1px_0_#000] tracking-wider">Rp {{ number_format($kamar->harga, 0, ',', '.') }}<span class="text-xs text-black font-sans font-bold">/bln</span></span>
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- Status -->
-                                        <td class="py-5 px-6 border-r-4 border-black text-center">
-                                            @if($kamar->status == 'Kosong')
-                                                <span class="inline-block px-3 py-1 rounded-lg text-sm font-black bg-orange-400 text-black border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform rotate-2 uppercase animate-pulse">KOSONG 🚪</span>
-                                            @else
-                                                <span class="inline-block px-3 py-1 rounded-lg text-sm font-black bg-green-400 text-black border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform -rotate-2 uppercase">TERISI ✅</span>
-                                            @endif
-                                        </td> 
-                                        
-                                        <!-- Penghuni -->
-                                        <td class="py-5 px-6 border-r-4 border-black">
-                                            @if($kamar->penghuni)
-                                                <span class="font-bold text-black uppercase bg-cyan-100 px-2 py-1 border-2 border-black inline-block shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform rotate-1">{{ $kamar->penghuni->nama }}</span>
-                                            @else
-                                                <span class="text-slate-400 italic font-bold">Belum ada penghuni</span>
-                                            @endif
-                                        </td>
-                                        
-                                        <!-- Aksi -->
-                                        <td class="py-5 px-6 text-right">
-                                            <div class="flex items-center justify-end gap-3">
-                                                <!-- Edit -->
-                                                <button onclick="openEditModal({{ $kamar->id }}, '{{ $kamar->nomor_kamar }}', '{{ $kamar->tipe_kamar }}', {{ $kamar->harga }}, '{{ $kamar->status }}')" class="w-12 h-12 rounded-xl bg-yellow-300 text-black hover:bg-yellow-400 flex items-center justify-center transition-all border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transform rotate-2" title="Edit Kamar">
-                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                                </button>
-                                                <!-- Hapus -->
-                                                <button onclick="openDeleteModal({{ $kamar->id }}, '{{ $kamar->nomor_kamar }}')" class="w-12 h-12 rounded-xl bg-red-500 text-white hover:bg-red-600 flex items-center justify-center transition-all border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transform -rotate-2" title="Hapus Kamar">
-                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
                 </div>
+
+                <!-- 4 KARTU STATISTIK MINIMALIS -->
+                @php
+                    $omsetBerjalan = $kamars->where('status', 'Terisi')->sum('harga');
+                    $totalPotensiOmset = $kamars->sum('harga');
+                    $persentaseOkupansi = $totalKamar > 0 ? round(($kamarTerisi / $totalKamar) * 100) : 0;
+                @endphp
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    
+                    <!-- 1. Total Kamar -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-md flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Unit Kamar</span>
+                            <div class="w-10 h-10 rounded-full border border-slate-200 bg-slate-50 text-slate-500 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 21v-4.875A2.625 2.625 0 0110.875 13.5h2.25a2.625 2.625 0 012.625 2.625V21M3 21h18M4.5 3h15a1.5 1.5 0 011.5 1.5v16.5H3V4.5A1.5 1.5 0 014.5 3z" /></svg>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h4 class="count-up text-3xl font-extrabold text-slate-900 tracking-tight" data-target="{{ $totalKamar }}">0</h4>
+                            <span class="text-xs text-slate-400 font-medium">Unit Kosan</span>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                            <span>Kapasitas Bangunan</span>
+                            <span class="font-semibold text-slate-700">100% Terdata</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Kamar Terisi (Okupansi) -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-md flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kamar Terisi</span>
+                            <div class="w-12 h-12 rounded-2xl bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h4 class="count-up text-3xl font-extrabold text-slate-900 tracking-tight" data-target="{{ $kamarTerisi }}">0</h4>
+                            <span class="text-xs text-slate-400 font-medium">/ {{ $totalKamar }} Unit</span>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                            <span>Okupansi</span>
+                            <span class="font-semibold text-sky-600">{{ $totalKamar > 0 ? round(($kamarTerisi / $totalKamar) * 100) : 0 }}% Terisi</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Kamar Kosong (Ready) -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-md flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kamar Kosong</span>
+                            <div class="w-10 h-10 rounded-full border border-amber-200 bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h4 class="count-up text-3xl font-extrabold text-amber-600 tracking-tight" data-target="{{ $kamarKosong }}">0</h4>
+                            <span class="text-xs text-slate-400 font-medium">Unit Siap Huni</span>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                            <span>Ketersediaan</span>
+                            <span class="font-semibold text-amber-600">Dapat Disewa</span>
+                        </div>
+                    </div>
+
+                    <!-- 4. Estimasi Nilai Sewa Berjalan -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-md flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pendapatan Sewa/Bln</span>
+                            <div class="w-12 h-12 rounded-2xl bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline gap-1">
+                            <h4 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Rp {{ number_format($omsetBerjalan, 0, ',', '.') }}</h4>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                            <span>Maksimal Potensi</span>
+                            <span class="font-semibold text-slate-700">Rp {{ number_format($totalPotensiOmset, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TOOLBAR FILTER & PENCARIAN -->
+                <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4 animate-fade-in delay-2">
+                    
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 min-w-0">
+                        <!-- Search Box -->
+                        <div class="relative w-full sm:w-80">
+                            <input type="text" id="kamarSearchInput" onkeyup="applyKamarFilter()" placeholder="Cari nomor kamar, tipe, atau penghuni..." class="w-full pl-9 pr-8 py-2.5 bg-slate-50 border border-slate-200/90 rounded-2xl text-xs font-medium text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all">
+                            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                            <button type="button" id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-2.5 text-slate-400 hover:text-slate-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+
+                        <!-- Status Filter Pills -->
+                        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                            <button type="button" onclick="setStatusFilter('all')" id="filterStatusAll" class="kamar-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white shadow-xs transition-all shrink-0">
+                                Semua ({{ $totalKamar }})
+                            </button>
+                            <button type="button" onclick="setStatusFilter('Kosong')" id="filterStatusKosong" class="kamar-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80 transition-all shrink-0">
+                                Kosong ({{ $kamarKosong }})
+                            </button>
+                            <button type="button" onclick="setStatusFilter('Terisi')" id="filterStatusTerisi" class="kamar-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80 transition-all shrink-0">
+                                Terisi ({{ $kamarTerisi }})
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tipe Filter -->
+                    <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold text-slate-400 hidden sm:inline">Tipe:</span>
+                            <select id="tipeFilterSelect" onchange="applyKamarFilter()" class="px-3 py-2 bg-slate-50 border border-slate-200/90 rounded-xl text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/5 cursor-pointer">
+                                <option value="all">Semua Tipe</option>
+                                <option value="Standar">Tipe Standar</option>
+                                <option value="VIP">Tipe VIP</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FULL VIEW TABLE (SATU-SATUNYA TAMPILAN SEKARANG) -->
+                <div id="kamarTableView" class="bg-white rounded-3xl border border-slate-200/80 shadow-md overflow-hidden animate-fade-in delay-3">
+                            <div class="overflow-x-auto min-h-[450px]">
+                                <table id="kamarTable" class="w-full min-w-[1000px] text-left border-collapse table-fixed">
+                            <thead>
+                                <tr class="border-b border-slate-100 bg-slate-50/75 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    <th class="py-4 px-6 w-[15%]">No. Kamar</th>
+                                    <th class="py-4 px-6 w-[15%]">Tipe Kamar</th>
+                                    <th class="py-4 px-6 w-[20%]">Tarif Sewa Bulanan</th>
+                                    <th class="py-4 px-6 w-[20%]">Status Ketersediaan</th>
+                                    <th class="py-4 px-6 w-[20%]">Penghuni Aktif</th>
+                                    <th class="py-4 px-6 w-[10%] text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-xs">
+                                @forelse($kamars as $kamar)
+                                <tr class="kamar-table-row hover:bg-slate-50/80 transition-colors group"
+                                    data-nomor="{{ strtolower($kamar->nomor_kamar) }}"
+                                    data-tipe="{{ $kamar->tipe_kamar }}"
+                                    data-status="{{ $kamar->status }}"
+                                    data-penghuni="{{ $kamar->penghuni ? strtolower($kamar->nama_penghuni_asli ?? $kamar->penghuni->nama) : '' }}"
+                                    data-search="{{ strtolower($kamar->nomor_kamar . ' ' . $kamar->tipe_kamar . ' ' . $kamar->status . ' ' . ($kamar->penghuni ? ($kamar->nama_penghuni_asli ?? $kamar->penghuni->nama) . ' ' . ($kamar->penghuni->nomor_hp ?? '') : '')) }}">
+                                    
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center gap-3.5">
+                                            <div class="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                                                {{ trim(str_ireplace('kamar', '', $kamar->nomor_kamar)) }}
+                                            </div>
+                                            <div>
+                                                <span class="text-sm font-bold text-slate-900 block leading-tight">
+                                                    {{ Str::startsWith(strtolower(trim($kamar->nomor_kamar)), 'kamar') ? trim($kamar->nomor_kamar) : 'Kamar ' . trim($kamar->nomor_kamar) }}
+                                                </span>
+                                                <span class="text-[11px] text-slate-400 font-medium">Unit Kosan</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    
+                                    <td class="py-4 px-6">
+                                        @if($kamar->tipe_kamar == 'VIP')
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-50 text-amber-700 border border-amber-200/80 text-[11px] font-bold">
+                                                <span>★ VIP</span>
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 border border-slate-200/80 text-[11px] font-semibold">
+                                                Standar
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-baseline gap-1">
+                                            <span class="text-sm font-extrabold text-slate-900 tracking-tight">Rp {{ number_format($kamar->harga, 0, ',', '.') }}</span>
+                                            <span class="text-[11px] text-slate-400 font-normal">/ bln</span>
+                                        </div>
+                                    </td>
+                                    
+                                    <td class="py-4 px-6">
+                                        @if($kamar->status == 'Terisi')
+                                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-xs font-bold shadow-2xs animate-active-badge">
+                                                <span class="relative flex h-2 w-2">
+                                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                                </span>
+                                                <span>Terisi</span>
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200/80 text-xs font-semibold">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                                <span>Kosong (Siap Huni)</span>
+                                            </span>
+                                        @endif
+                                    </td> 
+                                    
+                                    <!-- PERBAIKAN: Kolom Nama Penghuni yang Mendukung Fitur Yasa/Anton -->
+                                    <td class="py-4 px-6">
+                                        @if($kamar->status == 'Terisi' && $kamar->penghuni)
+                                            <div class="flex items-center gap-3">
+                                                <!-- Avatar Profil Singkatan Nama -->
+                                                <div class="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200/60 text-slate-700 flex items-center justify-center text-xs font-bold shrink-0 shadow-sm group-hover:bg-slate-900 group-hover:text-white transition-all">
+                                                    {{ strtoupper(substr($kamar->nama_penghuni_asli ?? $kamar->penghuni->nama, 0, 2)) }}
+                                                </div>
+                                                
+                                                <!-- Detail Nama & Kontak -->
+                                                <div class="flex flex-col">
+                                                    <span class="font-bold text-slate-900 text-xs sm:text-sm leading-tight">
+                                                        {{ $kamar->nama_penghuni_asli ?? $kamar->penghuni->nama }}
+                                                    </span>
+                                                    <span class="text-[11px] text-slate-500 font-medium mt-0.5">
+                                                        {{ $kamar->penghuni->nomor_hp ?? '-' }} 
+                                                        
+                                                        {{-- Kalau ada status kekerabatan, tampilkan --}}
+                                                        @if($kamar->kekerabatan)
+                                                            <span class="text-emerald-600 font-bold ml-1">({{ $kamar->kekerabatan }})</span>
+                                                        @endif
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div class="flex items-center gap-2 text-slate-400">
+                                                <span class="text-xs font-medium italic text-slate-400">Belum ada penghuni</span>
+                                            </div>
+                                        @endif
+                                    </td>
+                                    
+                                    <td class="py-4 px-6 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            <!-- Tombol Edit -->
+                                            <button type="button" onclick="openEditModal({{ $kamar->id }}, '{{ addslashes($kamar->nomor_kamar) }}', '{{ $kamar->tipe_kamar }}', {{ $kamar->harga }}, '{{ $kamar->status }}')" class="p-2 rounded-xl bg-slate-50 hover:bg-slate-900 text-slate-600 hover:text-white border border-slate-200/80 transition-all shadow-2xs" title="Edit Kamar">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                                            </button>
+                                            <!-- Tombol Hapus -->
+                                            <button type="button" onclick="openDeleteModal({{ $kamar->id }}, '{{ addslashes($kamar->nomor_kamar) }}')" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200/80 transition-all shadow-2xs" title="Hapus Kamar">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="6" class="py-12 text-center text-slate-400">Belum ada data kamar kos terdaftar.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pesan Kosong Kalau Filter/Search Nggak Ketemu -->
+                <div id="noResultsMessage" class="hidden py-16 text-center bg-white rounded-3xl border border-slate-200/80 shadow-sm p-8 animate-fade-in">
+                    <div class="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 mx-auto mb-4">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900">Kamar Tidak Ditemukan</h3>
+                    <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Tidak ada kamar yang sesuai dengan kriteria pencarian atau filter yang dipilih.</p>
+                    <button type="button" onclick="clearSearch()" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-all">
+                        Reset Filter & Pencarian
+                    </button>
+                </div>
+
             </div>
         </main>
     </div>
 
-    <!-- BACKGROUND GELAP GLOBAL -->
-    <div id="modalOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden transition-opacity opacity-0 duration-300"></div>
+    <!-- MODAL OVERLAY BACKDROP -->
+    <div id="modalOverlay" onclick="closeAllModals()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden transition-opacity opacity-0 duration-300"></div>
     
-    <!-- ========================================== -->
-    <!-- KOTAK MODAL TAMBAH KAMAR (COMIC STYLE) -->
-    <!-- ========================================== -->
-    <div id="modalBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md hidden">
-        <div class="bg-cyan-200 rounded-[2rem] shadow-[12px_12px_0_0_rgba(0,0,0,1)] border-4 border-black overflow-hidden modal-enter w-full mx-4 sm:mx-0 p-8 transform rotate-1">
-            <div class="flex justify-between items-center mb-6 border-b-4 border-black border-dashed pb-4">
-                <h3 class="text-3xl font-komik text-black tracking-widest drop-shadow-[2px_2px_0_#fff]">KAMAR BARU! 🛏️</h3>
-                <button onclick="closeModal()" class="w-10 h-10 bg-white border-2 border-black text-black rounded-full flex items-center justify-center font-komik text-xl hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0_0_rgba(0,0,0,1)]">X</button>
-            </div>
-            
-            <form action="{{ route('admin.kamar.store') }}" method="POST" class="bg-white p-6 rounded-2xl border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
-                @csrf
-                <div class="space-y-5 mb-6">
+    <!-- MODAL TAMBAH KAMAR BARU -->
+    <div id="modalBox" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex min-h-screen items-center justify-center p-4 cursor-pointer" onclick="closeModal()">
+            <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden modal-enter w-full max-w-lg p-6 sm:p-8 cursor-default" onclick="event.stopPropagation()">
+                <div class="flex justify-between items-center pb-5 mb-5 border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-extrabold text-slate-900 tracking-tight">Tambah Kamar Baru</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Daftarkan nomor dan tarif unit kamar ke sistem.</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                
+                <form action="{{ route('admin.kamar.store') }}" method="POST" class="space-y-4">
+                    @csrf
                     <div>
-                        <label class="block text-lg font-bold text-black mb-2 uppercase">Nomor Kamar <span class="text-red-500">*</span></label>
-                        <input type="text" name="nomor_kamar" required placeholder="Cth: Kamar 21" class="w-full rounded-xl comic-input text-lg font-bold px-4 py-3 bg-slate-50">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Nomor Kamar <span class="text-rose-500">*</span></label>
+                        <input type="text" id="storeNomor" name="nomor_kamar" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-900 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-colors cursor-text caret-slate-900">
+                        <p class="text-[11px] text-emerald-600 font-semibold mt-1">✨ Nomor otomatis diisi berdasarkan urutan terakhir (bisa diedit manual).</p>
                     </div>
                     <div>
-                        <label class="block text-lg font-bold text-black mb-2 uppercase">Tipe Kamar <span class="text-red-500">*</span></label>
-                        <select name="tipe_kamar" required onchange="setHargaOtomatis(this.value, 'inputHarga')" class="w-full rounded-xl comic-input text-lg font-bold px-4 py-3 bg-white appearance-none cursor-pointer">
-                            <option value="" disabled selected>Pilih Tipe...</option>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Tipe Kamar <span class="text-rose-500">*</span></label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="tipe_kamar" value="Standar" onchange="setHargaOtomatis(this.value, 'inputHarga')" class="peer sr-only" checked>
+                                <div class="p-3 rounded-2xl border-2 border-slate-200 peer-checked:border-slate-900 peer-checked:bg-slate-50 transition-all flex flex-col items-start h-full">
+                                    <span class="text-xs font-bold text-slate-900">Standar</span>
+                                    <span class="text-[11px] text-slate-500 mt-0.5">Rp 650.000 / bln</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="tipe_kamar" value="VIP" onchange="setHargaOtomatis(this.value, 'inputHarga')" class="peer sr-only">
+                                <div class="p-3 rounded-2xl border-2 border-slate-200 peer-checked:border-amber-500 peer-checked:bg-amber-50/50 transition-all flex flex-col items-start h-full">
+                                    <span class="text-xs font-bold text-amber-800">★ VIP</span>
+                                    <span class="text-[11px] text-amber-700 mt-0.5">Rp 850.000 / bln</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Harga Sewa per Bulan (Rp) <span class="text-rose-500">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-3 text-sm font-bold text-slate-400">Rp</span>
+                            <input type="number" id="inputHarga" name="harga" value="650000" required placeholder="650000" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-colors cursor-text caret-slate-900">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 pt-4 border-t border-slate-100 mt-6">
+                        <button type="button" onclick="closeModal()" class="w-1/3 py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-all">Batal</button>
+                        <button type="submit" class="w-2/3 py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
+                            <span>Simpan Kamar</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT KAMAR -->
+    <div id="modalEditBox" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex min-h-screen items-center justify-center p-4 cursor-pointer" onclick="closeEditModal()">
+            <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden modal-enter w-full max-w-lg p-6 sm:p-8 cursor-default" onclick="event.stopPropagation()">
+                <div class="flex justify-between items-center pb-5 mb-5 border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-extrabold text-slate-900 tracking-tight">Edit Data Kamar</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Perbarui nomor, tipe, tarif sewa, atau status kamar.</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeEditModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                
+                <form id="formEditKamar" method="POST" class="space-y-4">
+                    @csrf
+                    @method('PUT')
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Nomor Kamar <span class="text-rose-500">*</span></label>
+                        <input type="text" id="editNomor" name="nomor_kamar" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-900 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-colors cursor-text caret-slate-900">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Tipe Kamar <span class="text-rose-500">*</span></label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="cursor-pointer">
+                                <input type="radio" id="editTipeStandar" name="tipe_kamar" value="Standar" onchange="setHargaOtomatis(this.value, 'editHarga')" class="peer sr-only">
+                                <div class="p-3 rounded-2xl border-2 border-slate-200 peer-checked:border-slate-900 peer-checked:bg-slate-50 transition-all flex flex-col items-start h-full">
+                                    <span class="text-xs font-bold text-slate-900">Standar</span>
+                                    <span class="text-[11px] text-slate-500 mt-0.5">Rp 650.000 / bln</span>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" id="editTipeVIP" name="tipe_kamar" value="VIP" onchange="setHargaOtomatis(this.value, 'editHarga')" class="peer sr-only">
+                                <div class="p-3 rounded-2xl border-2 border-slate-200 peer-checked:border-amber-500 peer-checked:bg-amber-50/50 transition-all flex flex-col items-start h-full">
+                                    <span class="text-xs font-bold text-amber-800">★ VIP</span>
+                                    <span class="text-[11px] text-amber-700 mt-0.5">Rp 850.000 / bln</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Harga Sewa per Bulan (Rp) <span class="text-rose-500">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-3 text-sm font-bold text-slate-400">Rp</span>
+                            <input type="number" id="editHarga" name="harga" required class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-colors cursor-text caret-slate-900">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Status <span class="text-rose-500">*</span></label>
+                        <select id="editStatusKamar" name="status" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-colors cursor-pointer">
+                            <option value="Kosong">Kosong (Siap Huni)</option>
+                            <option value="Terisi">Terisi</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-3 pt-4 border-t border-slate-100 mt-6">
+                        <button type="button" onclick="closeEditModal()" class="w-1/3 py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-all">Batal</button>
+                        <button type="submit" class="w-2/3 py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
+                            <span>Perbarui Kamar</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HAPUS KAMAR -->
+    <div id="modalDeleteBox" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex min-h-screen items-center justify-center p-4 cursor-pointer" onclick="closeDeleteModal()">
+            <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden modal-enter w-full max-w-md p-6 sm:p-8 text-center cursor-default" onclick="event.stopPropagation()">
+                <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-rose-200/60 shadow-2xs">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                </div>
+                <h3 class="text-lg font-extrabold text-slate-900 tracking-tight">Hapus Kamar Kos?</h3>
+                <p class="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                    Yakin ingin menghapus <span id="deleteNomorLabel" class="font-extrabold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md"></span>? Data unit kamar ini akan dihapus secara permanen.
+                </p>
+                <form id="formDeleteKamar" method="POST" class="flex items-center gap-3 mt-6">
+                    @csrf
+                    @method('DELETE')
+                    <button type="button" onclick="closeDeleteModal()" class="w-1/2 py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-all">Batal</button>
+                    <button type="submit" class="w-1/2 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm hover:shadow-md transition-all">Ya, Hapus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL UPDATE TARIF MASSAL -->
+    <div id="modalUpdateTarifBox" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex min-h-screen items-center justify-center p-4 cursor-pointer" onclick="closeUpdateTarifModal()">
+            <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden modal-enter w-full max-w-md p-6 sm:p-8 cursor-default" onclick="event.stopPropagation()">
+                
+                <!-- Header Modal -->
+                <div class="flex justify-between items-center pb-5 mb-5 border-b border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200/60 shadow-xs">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-extrabold text-slate-900 tracking-tight">Update Tarif</h3>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Ubah harga serentak per tipe kamar.</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeUpdateTarifModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                
+                <form action="{{ route('admin.kamar.updateTarifMassal') }}" method="POST" class="space-y-5">
+                    @csrf
+                    @method('PUT')
+                    
+                    <!-- Pilih Tipe Kamar -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2">Pilih Tipe Kamar <span class="text-rose-500">*</span></label>
+                        <select name="tipe_kamar" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-colors cursor-pointer">
+                            <option value="" disabled selected>-- Pilih Tipe --</option>
                             <option value="Standar">Tipe Standar</option>
                             <option value="VIP">Tipe VIP</option>
                         </select>
                     </div>
+
+                    <!-- Harga Sewa Baru -->
                     <div>
-                        <label class="block text-lg font-bold text-black mb-2 uppercase">Harga Sewa (Rp) <span class="text-red-500">*</span></label>
-                        <input type="number" id="inputHarga" name="harga" required placeholder="Cth: 650000" class="w-full rounded-xl comic-input text-lg font-bold px-4 py-3 bg-slate-50">
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2">Harga Sewa Baru (Rp) <span class="text-rose-500">*</span></label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-3 text-sm font-bold text-slate-400">Rp</span>
+                            <input type="number" name="harga_baru" required placeholder="Contoh: 900000" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-colors cursor-text caret-slate-900">
+                        </div>
+                        
+                        <!-- Peringatan Estetik -->
+                        <div class="mt-3 p-3 bg-amber-50 border border-amber-200/60 rounded-xl flex items-start gap-2.5">
+                            <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            <p class="text-[10px] text-amber-700 font-semibold leading-relaxed">
+                                Tindakan ini akan mengubah harga semua kamar pada tipe yang dipilih secara massal dan permanen.
+                            </p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="flex gap-4">
-                    <button type="button" onclick="closeModal()" class="w-1/3 px-4 py-3 rounded-xl border-4 border-black bg-white hover:bg-slate-200 text-lg font-bold text-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transition-all">BATAL</button>
-                    <button type="submit" class="w-2/3 px-4 py-3 rounded-xl bg-green-400 hover:bg-green-500 text-black text-xl font-komik tracking-widest border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transition-all">SIMPAN KAMAR! 🚀</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- KOTAK MODAL EDIT KAMAR -->
-    <!-- ========================================== -->
-    <div id="modalEditBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md hidden">
-        <div class="bg-yellow-300 rounded-[2rem] shadow-[12px_12px_0_0_rgba(0,0,0,1)] border-4 border-black overflow-hidden modal-enter w-full mx-4 sm:mx-0 p-8 transform -rotate-1 relative">
-            <div class="flex justify-between items-center mb-6 border-b-4 border-black border-dashed pb-4">
-                <h3 class="text-3xl font-komik text-black tracking-widest drop-shadow-[2px_2px_0_#fff]">REVISI KAMAR! ✏️</h3>
-                <button onclick="closeEditModal()" class="w-10 h-10 bg-white border-2 border-black text-black rounded-full flex items-center justify-center font-komik text-xl hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0_0_rgba(0,0,0,1)]">X</button>
+                    <div class="flex items-center gap-3 pt-4 border-t border-slate-100 mt-6">
+                        <button type="button" onclick="closeUpdateTarifModal()" class="w-1/3 py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-all">Batal</button>
+                        <button type="submit" class="w-2/3 py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
+                            <span>Terapkan Tarif</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        </button>
+                    </div>
+                </form>
             </div>
-            
-            <form id="formEditKamar" method="POST" class="bg-white p-6 rounded-2xl border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
-                @csrf
-                @method('PUT')
-                <div class="space-y-5 mb-6">
-                    <div>
-                        <label class="block text-lg font-bold text-black mb-2 uppercase">Nomor Kamar <span class="text-red-500">*</span></label>
-                        <input type="text" id="editNomor" name="nomor_kamar" required class="w-full rounded-xl comic-input text-lg font-bold px-4 py-3 bg-slate-50">
-                    </div>
-                    <div>
-                        <label class="block text-lg font-bold text-black mb-2 uppercase">Tipe Kamar <span class="text-red-500">*</span></label>
-                        <select id="editTipe" name="tipe_kamar" required onchange="setHargaOtomatis(this.value, 'editHarga')" class="w-full rounded-xl comic-input text-lg font-bold px-4 py-3 bg-white appearance-none cursor-pointer">
-                            <option value="Standar">Tipe Standar</option>
-                            <option value="VIP">Tipe VIP</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-lg font-bold text-black mb-2 uppercase">Harga Sewa (Rp) <span class="text-red-500">*</span></label>
-                        <input type="number" id="editHarga" name="harga" required class="w-full rounded-xl comic-input text-lg font-bold px-4 py-3 bg-slate-50">
-                    </div>
-                    <div>
-                        <label class="block text-lg font-bold text-black mb-2 uppercase">Status Kamar <span class="text-red-500">*</span></label>
-                        <select id="editStatus" name="status" required class="w-full rounded-xl comic-input text-lg font-bold px-4 py-3 bg-white appearance-none cursor-pointer">
-                            <option value="Kosong">KOSONG (TERSEDIA)</option>
-                            <option value="Terisi">TERISI</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="flex gap-4">
-                    <button type="button" onclick="closeEditModal()" class="w-1/3 px-4 py-3 rounded-xl border-4 border-black bg-white hover:bg-slate-200 text-lg font-bold text-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transition-all">BATAL</button>
-                    <button type="submit" class="w-2/3 px-4 py-3 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-black text-xl font-komik tracking-widest border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transition-all">UPDATE!</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- KOTAK MODAL HAPUS KAMAR -->
-    <!-- ========================================== -->
-    <div id="modalDeleteBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm hidden">
-        <div class="bg-red-500 rounded-[2rem] shadow-[12px_12px_0_0_rgba(0,0,0,1)] border-4 border-black overflow-hidden modal-enter w-full mx-4 sm:mx-0 text-center p-8 transform rotate-1">
-            <div class="w-24 h-24 bg-white text-black border-4 border-black rounded-full flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-12 animate-bounce">
-                <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            </div>
-            <h3 class="text-3xl font-komik text-white mb-2 tracking-widest drop-shadow-[2px_2px_0_#000]">HAPUS KAMAR?!</h3>
-            <p class="text-lg text-white font-bold mb-8">Yakin mau musnahkan <span id="deleteNomorLabel" class="bg-yellow-300 text-black px-2 border-2 border-black inline-block transform -rotate-2"></span>? Data bakal hilang permanen!</p>
-            
-            <form id="formDeleteKamar" method="POST" class="flex gap-4">
-                @csrf
-                @method('DELETE')
-                <button type="button" onclick="closeDeleteModal()" class="w-1/2 px-4 py-3 rounded-xl border-4 border-black bg-white hover:bg-slate-200 text-lg font-bold text-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transition-all">BATAL</button>
-                <button type="submit" class="w-1/2 px-4 py-3 rounded-xl bg-black hover:bg-slate-800 text-white text-xl font-komik tracking-widest border-4 border-white shadow-[4px_4px_0_0_#fff] comic-button transition-all">HANCURKAN! 💣</button>
-            </form>
         </div>
     </div>
 
     <!-- SCRIPT JS -->
     <script>
         const overlay = document.getElementById('modalOverlay');
-        
-        function showModal(modalId, contentSelector) {
+        let currentStatusFilter = 'all';
+
+        function showModal(modalId) {
             const m = document.getElementById(modalId);
-            const content = m.querySelector(contentSelector);
+            const content = m.querySelector('.bg-white');
             overlay.classList.remove('hidden');
             m.classList.remove('hidden');
             setTimeout(() => {
                 overlay.classList.remove('opacity-0');
-                content.classList.remove('modal-enter');
-                content.classList.add('modal-enter-active');
+                if (content) {
+                    content.classList.remove('modal-leave-active', 'modal-leave');
+                    content.classList.add('modal-enter-active');
+                }
             }, 10);
         }
 
-        function hideModal(modalId, contentSelector) {
+        function hideModal(modalId) {
             const m = document.getElementById(modalId);
-            const content = m.querySelector(contentSelector);
+            const content = m.querySelector('.bg-white');
             overlay.classList.add('opacity-0');
-            content.classList.remove('modal-enter-active');
-            content.classList.add('modal-leave-active');
+            if (content) {
+                content.classList.remove('modal-enter-active');
+                content.classList.add('modal-leave-active');
+            }
             setTimeout(() => {
                 overlay.classList.add('hidden');
                 m.classList.add('hidden');
-                content.classList.remove('modal-leave-active');
-                content.classList.add('modal-enter');
-            }, 300);
+                if (content) {
+                    content.classList.remove('modal-leave-active');
+                    content.classList.add('modal-enter');
+                }
+            }, 200);
         }
 
-        function openModal() { showModal('modalBox', 'div'); }
-        function closeModal() { hideModal('modalBox', 'div'); }
+        function openModal() { 
+            const rows = document.querySelectorAll('.kamar-table-row');
+            let maxNum = 0;
+            rows.forEach(row => {
+                const str = row.getAttribute('data-nomor'); 
+                const numMatch = str.match(/\d+/); 
+                if (numMatch) {
+                    const num = parseInt(numMatch[0]);
+                    if (num > maxNum) maxNum = num;
+                }
+            });
+            const nextNum = maxNum + 1;
+            const formattedNum = nextNum < 10 ? '0' + nextNum : nextNum;
+            const inputNomor = document.getElementById('storeNomor');
+            if(inputNomor) { inputNomor.value = 'Kamar ' + formattedNum; }
+            showModal('modalBox'); 
+        }
+        function closeModal() { hideModal('modalBox'); }
 
         function openEditModal(id, nomor, tipe, harga, status) {
             document.getElementById('formEditKamar').action = `/admin/kamar/${id}`;
             document.getElementById('editNomor').value = nomor;
-            document.getElementById('editTipe').value = tipe;
+            if (tipe === 'VIP') {
+                document.getElementById('editTipeVIP').checked = true;
+            } else {
+                document.getElementById('editTipeStandar').checked = true;
+            }
             document.getElementById('editHarga').value = harga;
-            document.getElementById('editStatus').value = status;
-            showModal('modalEditBox', 'div');
+            document.getElementById('editStatusKamar').value = status;
+            showModal('modalEditBox');
         }
-        function closeEditModal() { hideModal('modalEditBox', 'div'); }
+        function closeEditModal() { hideModal('modalEditBox'); }
 
         function openDeleteModal(id, nomor) {
             document.getElementById('formDeleteKamar').action = `/admin/kamar/${id}`;
             document.getElementById('deleteNomorLabel').innerText = nomor;
-            showModal('modalDeleteBox', 'div');
+            showModal('modalDeleteBox');
         }
-        function closeDeleteModal() { hideModal('modalDeleteBox', 'div'); }
+        function closeDeleteModal() { hideModal('modalDeleteBox'); }
+
+        function openUpdateTarifModal() { showModal('modalUpdateTarifBox'); }
+        function closeUpdateTarifModal() { hideModal('modalUpdateTarifBox'); }
+
+        function closeAllModals() {
+            closeModal();
+            closeEditModal();
+            closeDeleteModal();
+            closeUpdateTarifModal();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAllModals();
+                const dropdown = document.getElementById('profilDropdown');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    toggleDropdown();
+                }
+            }
+        });
 
         function setHargaOtomatis(tipe, inputId) {
             const inputTarget = document.getElementById(inputId);
-            if(tipe === 'Standar') { inputTarget.value = 650000; } 
-            else if(tipe === 'VIP') { inputTarget.value = 850000; }
+            if(tipe === 'Standar') { 
+                inputTarget.value = 650000; 
+            } else if(tipe === 'VIP') { 
+                inputTarget.value = 850000; 
+            }
         }
 
-        // --- Animasi Counter Up ---
-        document.addEventListener("DOMContentLoaded", () => {
-            const counters = document.querySelectorAll('.count-up');
-            counters.forEach(counter => {
-                const target = +counter.getAttribute('data-target');
-                let startTimestamp = null;
-                const step = (timestamp) => {
-                    if (!startTimestamp) startTimestamp = timestamp;
-                    const progress = Math.min((timestamp - startTimestamp) / 1000, 1);
-                    const easeOutProgress = 1 - Math.pow(1 - progress, 3);
-                    counter.innerText = Math.floor(easeOutProgress * target);
-                    if (progress < 1) window.requestAnimationFrame(step);
-                    else counter.innerText = target; 
-                };
-                window.requestAnimationFrame(step);
+        function setStatusFilter(status) {
+            currentStatusFilter = status;
+            applyKamarFilter();
+            
+            const btnAll = document.getElementById('filterStatusAll');
+            const btnKosong = document.getElementById('filterStatusKosong');
+            const btnTerisi = document.getElementById('filterStatusTerisi');
+            const activeClass = 'status-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white shadow-xs transition-all shrink-0';
+            const inactiveClass = 'status-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80 transition-all shrink-0';
+            if(btnAll) btnAll.className = (status === 'all') ? activeClass : inactiveClass;
+            if(btnKosong) btnKosong.className = (status === 'Kosong') ? activeClass : inactiveClass;
+            if(btnTerisi) btnTerisi.className = (status === 'Terisi') ? activeClass : inactiveClass;
+        }
+
+        function clearSearch() {
+            document.getElementById('kamarSearchInput').value = '';
+            document.getElementById('tipeFilterSelect').value = 'all';
+            setStatusFilter('all');
+        }
+
+        function applyKamarFilter() {
+            const query = (document.getElementById('kamarSearchInput').value || '').trim().toLowerCase();
+            const tipeFilter = document.getElementById('tipeFilterSelect').value;
+            const clearBtn = document.getElementById('clearSearchBtn');
+
+            if (query.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+
+            const tableRows = document.querySelectorAll('.kamar-table-row');
+            let visibleCount = 0;
+
+            tableRows.forEach(row => {
+                const searchStr = row.getAttribute('data-search') || '';
+                const tipe = row.getAttribute('data-tipe') || '';
+                const status = row.getAttribute('data-status') || '';
+                
+                const matchesQuery = query === '' || searchStr.includes(query);
+                const matchesStatus = currentStatusFilter === 'all' || status === currentStatusFilter;
+                const matchesTipe = tipeFilter === 'all' || tipe === tipeFilter;
+
+                if (matchesQuery && matchesStatus && matchesTipe) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
             });
+
+            const noResults = document.getElementById('noResultsMessage');
+            if (visibleCount === 0 && tableRows.length > 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll('.count-up').forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                if (isNaN(target)) return;
+                let count = 0;
+                const speed = 25;
+                const increment = Math.max(1, Math.ceil(target / speed));
+                const updateCount = () => {
+                    count += increment;
+                    if (count < target) {
+                        counter.innerText = count;
+                        setTimeout(updateCount, 30);
+                    } else {
+                        counter.innerText = target;
+                    }
+                };
+                updateCount();
+            });
+
+            const alertSuccess = document.getElementById('alertSuccess');
+            if (alertSuccess) {
+                setTimeout(() => {
+                    alertSuccess.style.opacity = '0';
+                    alertSuccess.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => alertSuccess.remove(), 500);
+                }, 5000);
+            }
         });
 
-        // Dropdown Profil
         function toggleDropdown() {
             const dropdown = document.getElementById('profilDropdown');
+            if (!dropdown) return;
             if (dropdown.classList.contains('hidden')) {
                 dropdown.classList.remove('hidden');
                 setTimeout(() => {
@@ -494,14 +1003,14 @@
             } else {
                 dropdown.classList.remove('opacity-100', 'scale-100');
                 dropdown.classList.add('opacity-0', 'scale-95');
-                setTimeout(() => { dropdown.classList.add('hidden'); }, 200); 
+                setTimeout(() => { dropdown.classList.add('hidden'); }, 200);
             }
         }
 
         window.addEventListener('click', function(e) {
             const button = document.getElementById('profilButton');
             const dropdown = document.getElementById('profilDropdown');
-            if (!button.contains(e.target) && !dropdown.contains(e.target)) {
+            if (button && dropdown && !button.contains(e.target) && !dropdown.contains(e.target)) {
                 if (!dropdown.classList.contains('hidden')) {
                     dropdown.classList.remove('opacity-100', 'scale-100');
                     dropdown.classList.add('opacity-0', 'scale-95');
@@ -509,6 +1018,20 @@
                 }
             }
         });
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (!sidebar || !backdrop) return;
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+            }
+        }
     </script>
 </body>
 </html>

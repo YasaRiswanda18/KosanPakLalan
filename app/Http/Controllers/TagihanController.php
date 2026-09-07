@@ -1,121 +1,144 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Penghuni;
 use App\Models\Tagihan;
 use Illuminate\Http\Request;
+use Carbon\Carbon; // Pastikan 'Carbon' huruf besar C-nya
 
 class TagihanController extends Controller
 {
-    public function index()
+    // =================================================================
+    // HELPER TERPUSAT: Biar format teks periode selalu SAMA PERSIS 100%
+    // =================================================================
+    private function getPeriodeSekarang() {
+        Carbon::setLocale('id');
+        // Formatnya d F Y = (Tanggal Bulan Tahun)
+        // Pakai addMonthsNoOverflow biar tgl 31 Agt jadinya 30 Sept (Gak loncat ke 1 Okt)
+        $tglMulai = Carbon::now()->translatedFormat('d F Y');
+        $tglAkhir = Carbon::now()->addMonthsNoOverflow(1)->translatedFormat('d F Y');
+        return $tglMulai . ' - ' . $tglAkhir;
+    }
+
+    // 1. Tampilkan Semua Data Tagihan
+    public function index(Request $request)
     {
-        // 1. Ambil data tagihan (Kode lama kamu)
-        $tagihans = \App\Models\Tagihan::with(['penghuni.kamar'])->latest()->get();
-        $totalPemasukan = \App\Models\Tagihan::where('status', 'Lunas')->sum('jumlah_bayar');
-        $totalTunggakan = \App\Models\Tagihan::where('status', 'Belum Lunas')->sum('jumlah_bayar');
+        $query = Tagihan::with(['penghuni.kamars'])->latest();
 
-        // 2. TAMBAHAN BARU: Ambil data penghuni aktif untuk dropdown Modal Satuan
-        $penghuniAktifList = \App\Models\Penghuni::with('kamar')->where('status', 'Aktif')->get();
+        // Filter Pencarian Nama
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->whereHas('penghuni', function($q) use ($search) {
+                $q->where('nama', 'like', '%' . $search . '%');
+            });
+        }
 
-        // 3. PASTIKAN NAMA 'penghuniAktifList' MASUK KE DALAM COMPACT
+        // Filter Bulan (Mesin Jaring 2 Bahasa)
+        if ($request->filled('bulan') && $request->bulan != 'Semua Bulan') {
+            $bulanIndo = $request->bulan;
+
+            $kamusBulan = [
+                'Januari' => 'January', 'Februari' => 'February', 'Maret' => 'March',
+                'April' => 'April', 'Mei' => 'May', 'Juni' => 'June',
+                'Juli' => 'July', 'Agustus' => 'August', 'September' => 'September',
+                'Oktober' => 'October', 'November' => 'November', 'Desember' => 'December'
+            ];
+            $bulanInggris = $kamusBulan[$bulanIndo] ?? $bulanIndo;
+
+            $query->where(function($q) use ($bulanIndo, $bulanInggris) {
+                $q->where('bulan_tagihan', 'like', '%' . $bulanIndo . '%')
+                  ->orWhere('bulan_tagihan', 'like', '%' . $bulanInggris . '%');
+            });
+        }
+
+        $tagihans = $query->get();
+        $totalPemasukan = $tagihans->where('status', 'Lunas')->sum('jumlah_bayar');
+        $totalTunggakan = $tagihans->whereIn('status', ['Belum Lunas', 'Menunggu Konfirmasi'])->sum('jumlah_bayar');
+
+        // 🛡️ FITUR SMART DROPDOWN 🛡️
+        $periodeSekarang = $this->getPeriodeSekarang();
+
+        // Tampilkan hanya Penghuni Aktif yang BELUM PUNYA TAGIHAN di periode ini
+        $penghuniAktifList = Penghuni::with('kamars')
+            ->where('status', 'Aktif')
+            ->whereDoesntHave('tagihans', function($q) use ($periodeSekarang) {
+                $q->where('bulan_tagihan', $periodeSekarang);
+            })->get();
+
         return view('admin.tagihan.index', compact('tagihans', 'totalPemasukan', 'totalTunggakan', 'penghuniAktifList'));
     }
-    // FUNGSI UNTUK KONFIRMASI PEMBAYARAN TAGIHAN
-    public function bayar($id)
+
+    // 2. FUNGSI UNTUK GENERATE TAGIHAN MASSAL
+    public function generate(Request $request)
     {
-        $tagihan = Tagihan::findOrFail($id);
-        
-        // Update status jadi Lunas dan catat tanggal bayar hari ini
-        $tagihan->update([
-            'status' => 'Lunas',
-            'tanggal_bayar' => \Carbon\Carbon::now()
-        ]);
-        
-        return redirect()->back()->with('success', 'Alhamdulillah! Pembayaran berhasil dikonfirmasi. Saldo Pemasukan bertambah!');
-    }
-    // FUNGSI UNTUK GENERATE TAGIHAN MASSAL
-    public function generate()
-    {
-        // 1. Siapkan senjata 2 Bahasa untuk Satpam
-        $namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-        
-        $bulanIndo = $namaBulan[date('n') - 1]; // Contoh: "Agustus"
-        $bulanEng  = date('F'); // Contoh: "August"
-        $tahunIni  = date('Y'); // Contoh: "2026"
+        $periodeSekarang = $this->getPeriodeSekarang();
 
-        // Format standar yang bakal disimpan kalau bikin tagihan massal
-        $formatSimpan = $bulanIndo . ' ' . $tahunIni;
-
-        // 2. Cari semua penghuni yang statusnya 'Aktif' dan punya kamar
-        $penghuniAktif = Penghuni::with('kamar')->where('status', 'Aktif')->whereNotNull('kamar_id')->get();
-
+        // Tarik semua penghuni aktif beserta kamarnya
+        $semuaPenghuni = Penghuni::with('kamars')->where('status', 'Aktif')->get();
         $jumlahDibuat = 0;
 
-        foreach ($penghuniAktif as $penghuni) {
-            // 🔥 SATPAM PINTAR: Cek tagihan pakai 2 bahasa (Indo/Inggris) di tahun yang sama
-            $tagihanAda = Tagihan::where('penghuni_id', $penghuni->id)
-                ->where(function($q) use ($bulanIndo, $bulanEng) {
-                    // Cari kata "Agustus" ATAU "August"
-                    $q->where('bulan_tagihan', 'like', '%' . $bulanIndo . '%')
-                      ->orWhere('bulan_tagihan', 'like', '%' . $bulanEng . '%');
-                })
-                ->where('bulan_tagihan', 'like', '%' . $tahunIni . '%') // Pastikan tahunnya sama
-                ->exists();
+        foreach ($semuaPenghuni as $penghuni) {
+            // Gabungkan semua harga kamar yang dia sewa
+            $totalBayar = $penghuni->kamars->sum('harga');
 
-            // Kalau tagihan belum ada, baru dibikinin!
-            if (!$tagihanAda && $penghuni->kamar) {
-                Tagihan::create([
-                    'penghuni_id'   => $penghuni->id,
-                    'bulan_tagihan' => $formatSimpan,
-                    'jumlah_bayar'  => $penghuni->kamar->harga,
-                    'status'        => 'Belum Lunas',
-                    'tanggal_bayar' => null,
-                ]);
-                $jumlahDibuat++;
+            if ($totalBayar > 0) {
+                // 🛡️ FITUR ANTI-DOBEL
+                $cekTagihan = Tagihan::where('penghuni_id', $penghuni->id)
+                                     ->where('bulan_tagihan', $periodeSekarang)
+                                     ->first();
+
+                // Kalau belum ada tagihan di periode ini, baru sistem buatin
+                if (!$cekTagihan) {
+                    Tagihan::create([
+                        'penghuni_id'   => $penghuni->id,
+                        'bulan_tagihan' => $periodeSekarang,
+                        'jumlah_bayar'  => $totalBayar,
+                        'status'        => 'Belum Lunas'
+                    ]);
+                    $jumlahDibuat++;
+                }
             }
         }
 
-        if ($jumlahDibuat > 0) {
-            return redirect()->back()->with('success', "Wushh! Berhasil membuat $jumlahDibuat tagihan baru untuk bulan $formatSimpan.");
-        } else {
-            return redirect()->back()->with('success', "Aman Bos! Semua penghuni aktif sudah memiliki tagihan untuk bulan ini. Tidak ada tagihan ganda yang dibuat.");
+        if ($jumlahDibuat == 0) {
+            return redirect()->back()->with('error', "Semua penghuni aktif sudah memiliki tagihan untuk periode saat ini.");
         }
+
+        return redirect()->back()->with('success', "Wushh! $jumlahDibuat tagihan baru untuk periode $periodeSekarang berhasil digenerate.");
     }
-    // FUNGSI BARU: Buat Tagihan Satuan
-    // FUNGSI BARU: Buat Tagihan Satuan (VERSI KUMPLIT)
+
+    // 3. FUNGSI BUAT TAGIHAN SATUAN MANUAL
     public function storeManual(Request $request)
     {
-        // 1. Validasi inputan form kumplit
         $request->validate([
-            'penghuni_id'  => 'required|exists:penghunis,id',
-            'tanggal_buat' => 'required|date',
-            'jumlah_bayar' => 'required|numeric',
+            'penghuni_id'   => 'required|exists:penghunis,id',
+            'jumlah_bayar'  => 'required|numeric',
+            'bulan_tagihan' => 'required|string'
         ]);
 
-        $penghuni = \App\Models\Penghuni::find($request->penghuni_id);
+        $periodeSekarang = $request->bulan_tagihan; // Ngambil dari input Form Blade
+        $penghuniTerpilih = Penghuni::with('kamars')->findOrFail($request->penghuni_id);
 
-        // 2. Kita sulap format tanggal kalender (misal: 2026-08-09) jadi teks cantik (09 Agustus 2026)
-        $tanggalEstetik = \Carbon\Carbon::parse($request->tanggal_buat)->translatedFormat('d F Y');
-
-        // 3. Cek jangan sampai dobel tagihan di tanggal yang sama persis
-        $cekTagihan = \App\Models\Tagihan::where('penghuni_id', $penghuni->id)
-                                         ->where('bulan_tagihan', $tanggalEstetik)
-                                         ->first();
+        // 🛡️ Cek Anti-Double Tagihan
+        $cekTagihan = Tagihan::where('penghuni_id', $penghuniTerpilih->id)
+                             ->where('bulan_tagihan', $periodeSekarang)
+                             ->first();
 
         if ($cekTagihan) {
-            return redirect()->back()->with('error', 'Tagihan untuk tanggal '.$tanggalEstetik.' sudah pernah dibuat!');
+            return redirect()->back()->with('error', 'Gagal! Penghuni atas nama ' . $penghuniTerpilih->nama . ' sudah memiliki tagihan di periode ini.');
         }
 
-        // 4. Buat tagihannya (Simpan tanggal estetik ke dalam kolom bulan_tagihan biar database aman)
-        \App\Models\Tagihan::create([
-            'penghuni_id'   => $penghuni->id,
-            'bulan_tagihan' => $tanggalEstetik, // Masuk ke tabel dengan tulisan rapi: 09 Agustus 2026
-            'jumlah_bayar'  => $request->jumlah_bayar, // Nominal fleksibel dari form, bukan kaku dari database
-            'status'        => 'Belum Lunas',
+        Tagihan::create([
+            'penghuni_id'   => $penghuniTerpilih->id,
+            'bulan_tagihan' => $periodeSekarang,
+            'jumlah_bayar'  => $request->jumlah_bayar,
+            'status'        => 'Belum Lunas'
         ]);
 
-        return redirect()->back()->with('success', 'Mantap! Tagihan khusus tanggal '.$tanggalEstetik.' untuk '.$penghuni->nama.' berhasil dibuat.');
+        return redirect()->back()->with('success', 'Tagihan satuan atas nama ' . $penghuniTerpilih->nama . ' berhasil diterbitkan!');
     }
+
     // ==========================================
     // FUNGSI UPDATE (EDIT) TAGIHAN MANUAL
     // ==========================================
@@ -126,7 +149,7 @@ class TagihanController extends Controller
             'catatan'      => 'nullable|string|max:255',
         ]);
 
-        $tagihan = \App\Models\Tagihan::findOrFail($id);
+        $tagihan = Tagihan::findOrFail($id);
         $tagihan->update([
             'jumlah_bayar' => $request->jumlah_bayar,
             'catatan'      => $request->catatan,
@@ -140,9 +163,144 @@ class TagihanController extends Controller
     // ==========================================
     public function destroy($id)
     {
-        $tagihan = \App\Models\Tagihan::findOrFail($id);
+        $tagihan = Tagihan::findOrFail($id);
         $tagihan->delete();
 
         return redirect()->back()->with('success', 'Wushh! Tagihan yang salah berhasil dihapus dari sistem.');
+    }
+
+    // ==========================================
+    // FUNGSI UNTUK KONFIRMASI PEMBAYARAN MANUAL
+    // ==========================================
+    public function bayar($id)
+    {
+        $tagihan = Tagihan::findOrFail($id);
+        
+        $tagihan->update([
+            'status' => 'Lunas',
+            'tanggal_bayar' => Carbon::now()
+        ]);
+        
+        return redirect()->back()->with('success', 'Alhamdulillah! Pembayaran berhasil dikonfirmasi. Saldo Pemasukan bertambah!');
+    }
+
+    // =========================================================
+    // FUNGSI TAMBAHAN (VERIFIKASI, TOLAK BUKTI, CETAK)
+    // =========================================================
+
+    public function konfirmasi($id)
+    {
+        $tagihan = Tagihan::findOrFail($id);
+        $tagihan->update([
+            'status' => 'Lunas',
+            'tanggal_bayar' => Carbon::now()
+        ]);
+        return redirect()->back()->with('success', 'Sah! Pembayaran via transfer berhasil diverifikasi LUNAS.');
+    }
+
+    public function tolak(Request $request, $id)
+    {
+        $request->validate(['alasan_tolak' => 'required|string|max:255']);
+        $tagihan = Tagihan::findOrFail($id);
+        $tagihan->update([
+            'status'       => 'Ditolak',
+            'alasan_tolak' => $request->alasan_tolak,
+            'bukti_bayar'  => null
+        ]);
+        return redirect()->back()->with('success', 'Pembayaran ditolak. Menunggu penghuni unggah ulang bukti transfer.');
+    }
+
+    public function bersihkanArsip(Request $request)
+    {
+        $query = Tagihan::where('status', 'Lunas');
+
+        if ($request->filled('bulan') && $request->bulan != 'Semua Bulan') {
+            $bulanIndo = $request->bulan;
+            $kamusBulan = [
+                'Januari' => 'January', 'Februari' => 'February', 'Maret' => 'March',
+                'April' => 'April', 'Mei' => 'May', 'Juni' => 'June',
+                'Juli' => 'July', 'Agustus' => 'August', 'September' => 'September',
+                'Oktober' => 'October', 'November' => 'November', 'Desember' => 'December'
+            ];
+            $bulanInggris = $kamusBulan[$bulanIndo] ?? $bulanIndo;
+
+            $query->where(function($q) use ($bulanIndo, $bulanInggris) {
+                $q->where('bulan_tagihan', 'like', '%' . $bulanIndo . '%')
+                  ->orWhere('bulan_tagihan', 'like', '%' . $bulanInggris . '%');
+            });
+        }
+
+        $jumlahDihapus = $query->count();
+        if ($jumlahDihapus == 0) {
+            return redirect()->back()->with('error', 'Tidak ada arsip tagihan berstatus LUNAS pada filter ini.');
+        }
+        $query->delete();
+        return redirect()->back()->with('success', "Beres Bos! $jumlahDihapus arsip tagihan berhasil dibersihkan permanen.");
+    }
+
+    public function cetakLaporan(Request $request)
+    {
+        $query = Tagihan::with(['penghuni.kamars'])->latest();
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->whereHas('penghuni', function($q) use ($search) {
+                $q->where('nama', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('bulan') && $request->bulan != 'Semua Bulan') {
+            $bulanIndo = $request->bulan;
+            $kamusBulan = [
+                'Januari' => 'January', 'Februari' => 'February', 'Maret' => 'March',
+                'April' => 'April', 'Mei' => 'May', 'Juni' => 'June',
+                'Juli' => 'July', 'Agustus' => 'August', 'September' => 'September',
+                'Oktober' => 'October', 'November' => 'November', 'Desember' => 'December'
+            ];
+            $bulanInggris = $kamusBulan[$bulanIndo] ?? $bulanIndo;
+
+            $query->where(function($q) use ($bulanIndo, $bulanInggris) {
+                $q->where('bulan_tagihan', 'like', '%' . $bulanIndo . '%')
+                  ->orWhere('bulan_tagihan', 'like', '%' . $bulanInggris . '%');
+            });
+        }
+
+        $tagihans = $query->get();
+        $totalPemasukan = $tagihans->where('status', 'Lunas')->sum('jumlah_bayar');
+
+        return view('admin.tagihan.cetak', compact('tagihans', 'totalPemasukan'));
+    }
+
+    public function cetakStruk($id)
+    {
+        $tagihan = Tagihan::with(['penghuni.kamars'])->findOrFail($id);
+        $terbilang = $this->penyebut($tagihan->jumlah_bayar) . ' Rupiah';
+
+        return view('admin.tagihan.cetak_struk', compact('tagihan', 'terbilang'));
+    }
+
+    // Helper Rekursif Terbilang Uang
+    private function penyebut($nilai) {
+        $nilai = abs($nilai);
+        $huruf = array("", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas");
+        $temp = "";
+        if ($nilai < 12) {
+            $temp = " " . $huruf[$nilai];
+        } else if ($nilai < 20) {
+            $temp = $this->penyebut($nilai - 10) . " Belas";
+        } else if ($nilai < 100) {
+            $temp = $this->penyebut($nilai / 10) . " Puluh" . $this->penyebut($nilai % 10);
+        } else if ($nilai < 200) {
+            $temp = " Seratus" . $this->penyebut($nilai - 100);
+        } else if ($nilai < 1000) {
+            $temp = $this->penyebut($nilai / 100) . " Ratus" . $this->penyebut($nilai % 100);
+        } else if ($nilai < 2000) {
+            $temp = " Seribu" . $this->penyebut($nilai - 1000);
+        } else if ($nilai < 1000000) {
+            $temp = $this->penyebut($nilai / 1000) . " Ribu" . $this->penyebut($nilai % 1000);
+        } else if ($nilai < 1000000000) {
+            $temp = $this->penyebut($nilai / 1000000) . " Juta" . $this->penyebut($nilai % 1000000);
+        }
+        return $temp;
     }
 }

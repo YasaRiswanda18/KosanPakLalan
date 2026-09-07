@@ -7,12 +7,15 @@ use App\Models\Kamar;
 
 class KamarController extends Controller
 {
+    // ==========================================
+    // 1. TAMPILKAN HALAMAN MANAJEMEN KAMAR
+    // ==========================================
     public function index()
     {
-        // TAMBAHKAN with('penghuni') BIAR NAMANYA IKUT KEBAWA DARI DATABASE
+        // Ambil data kamar beserta data penghuninya
         $kamars = Kamar::with('penghuni')->get();
         
-        // (Biarkan kode hitung-hitungan total kamar, kosong, terisi di bawahnya tetap aman)
+        // Hitung statistik untuk Dashboard Atas
         $totalKamar = Kamar::count();
         $kamarTerisi = Kamar::where('status', 'Terisi')->count();
         $kamarKosong = Kamar::where('status', 'Kosong')->count();
@@ -20,10 +23,11 @@ class KamarController extends Controller
         return view('admin.kamar.index', compact('kamars', 'totalKamar', 'kamarTerisi', 'kamarKosong'));
     }
 
-    // FUNGSI BARU: Untuk menyimpan data kamar
+    // ==========================================
+    // 2. SIMPAN KAMAR BARU
+    // ==========================================
     public function store(Request $request)
     {
-        // 1. Validasi data (Biar Pak Lalan nggak masukin data kosong/dobel)
         $request->validate([
             'nomor_kamar' => 'required|string|unique:kamars,nomor_kamar',
             'tipe_kamar'  => 'required|in:Standar,VIP',
@@ -34,7 +38,6 @@ class KamarController extends Controller
             'harga.required'       => 'Harga sewa wajib diisi!',
         ]);
 
-        // 2. Simpan ke database
         Kamar::create([
             'nomor_kamar' => $request->nomor_kamar,
             'tipe_kamar'  => $request->tipe_kamar,
@@ -42,14 +45,14 @@ class KamarController extends Controller
             'status'      => 'Kosong', // Default otomatis kosong
         ]);
 
-        // 3. Kembalikan ke halaman tabel dengan pesan sukses
         return redirect()->route('admin.kamar.index')->with('success', 'Mantap! Kamar baru berhasil ditambahkan.');
     }
-    // FUNGSI BARU: Untuk memproses update data kamar
+
+    // ==========================================
+    // 3. UPDATE DATA KAMAR (SATUAN)
+    // ==========================================
     public function update(Request $request, $id)
     {
-        // 1. Validasi data
-        // Catatan penting: unique:kamars,nomor_kamar,$id memastikan sistem tidak error "nomor sudah dipakai" jika kita mengedit kamar yang sama.
         $request->validate([
             'nomor_kamar' => 'required|string|unique:kamars,nomor_kamar,' . $id,
             'tipe_kamar'  => 'required|in:Standar,VIP',
@@ -61,10 +64,8 @@ class KamarController extends Controller
             'harga.required'       => 'Harga sewa wajib diisi!',
         ]);
 
-        // 2. Cari kamar berdasarkan ID yang mau di-edit
         $kamar = Kamar::findOrFail($id);
 
-        // 3. Update datanya di database
         $kamar->update([
             'nomor_kamar' => $request->nomor_kamar,
             'tipe_kamar'  => $request->tipe_kamar,
@@ -72,19 +73,33 @@ class KamarController extends Controller
             'status'      => $request->status,
         ]);
 
-        // 4. Kembalikan ke halaman tabel dengan pesan sukses
         return redirect()->route('admin.kamar.index')->with('success', 'Wushh! Data kamar berhasil diperbarui.');
     }
-    // FUNGSI BARU: Untuk menghapus data kamar
+
+    // ==========================================
+    // 4. HAPUS KAMAR
+    // ==========================================
     public function destroy($id)
     {
-        // 1. Cari kamar yang mau dihapus
         $kamar = Kamar::findOrFail($id);
-
-        // 2. Hancurkan dari database
         $kamar->delete();
 
-        // 3. Kembalikan ke halaman tabel dengan pesan sukses
         return redirect()->route('admin.kamar.index')->with('success', 'Data kamar berhasil dihapus selamanya dari sistem!');
+    }
+
+    // ==========================================
+    // 5. UPDATE TARIF MASSAL BERDASARKAN TIPE
+    // ==========================================
+    public function updateTarifMassal(Request $request)
+    {
+        $request->validate([
+            'tipe_kamar' => 'required|in:Standar,VIP',
+            'harga_baru' => 'required|numeric|min:0',
+        ]);
+
+        // 1 Baris sakti buat update massal!
+        Kamar::where('tipe_kamar', $request->tipe_kamar)->update(['harga' => $request->harga_baru]);
+
+        return redirect()->route('admin.kamar.index')->with('success', 'Tarif Kamar ' . $request->tipe_kamar . ' berhasil diupdate massal menjadi Rp ' . number_format($request->harga_baru, 0, ',', '.') . '!');
     }
 }

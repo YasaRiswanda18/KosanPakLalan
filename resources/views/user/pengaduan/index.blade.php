@@ -1,244 +1,933 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Lapor Keluhan - Kos Lalan</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <title>Lapor Keluhan - Kosan Pak Lalan</title>
     
-    <!-- FONT KOMIK DARI GOOGLE -->
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* Pengaturan Font Dasar */
-        body { font-family: 'Comic Neue', cursive; font-weight: 700; }
-        .font-komik { font-family: 'Bangers', cursive; letter-spacing: 2px; }
-        
-        /* Background Titik-Titik Ala Kertas Komik (Halftone) */
-        .bg-halftone {
-            background-color: #f8fafc;
-            background-image: radial-gradient(#94a3b8 2px, transparent 2px);
-            background-size: 24px 24px;
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FAFAFA;
         }
 
-        /* Animasi Pop-up Komik */
-        .animate-pop { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.8); }
-        @keyframes popIn { to { opacity: 1; transform: scale(1); } }
-        
-        .delay-1 { animation-delay: 150ms; }
-        .delay-2 { animation-delay: 300ms; }
-        
-        /* Efek Hover Kartu Komik */
-        .comic-card { transition: all 0.2s ease-in-out; }
-        .comic-card:hover { transform: translate(-4px, -4px); box-shadow: 12px 12px 0px 0px rgba(0,0,0,1); }
-        
-        /* Input Komik */
-        .comic-input {
-            border: 3px solid black;
-            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
-            transition: all 0.2s;
+        /* Smooth Fade In Animation */
+        .animate-fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        .comic-input:focus {
-            outline: none;
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
-            background-color: #fef08a; /* Kuning pas diketik */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+
+        .delay-1 { animation-delay: 50ms; }
+        .delay-2 { animation-delay: 100ms; }
+        .delay-3 { animation-delay: 150ms; }
+        .delay-4 { animation-delay: 200ms; }
+
+        /* Smooth Active Status Badge Pulse & Glow */
+        @keyframes statusPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); transform: scale(1); }
+            50% { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); transform: scale(1.02); }
+        }
+        .animate-active-badge {
+            animation: statusPulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Modal Transitions */
+        .modal-enter { opacity: 0; transform: scale(0.96) translateY(8px); }
+        .modal-enter-active { opacity: 1; transform: scale(1) translateY(0); transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-leave { opacity: 1; transform: scale(1) translateY(0); }
+        .modal-leave-active { opacity: 0; transform: scale(0.96) translateY(8px); transition: all 0.2s cubic-bezier(0.4, 0, 1, 1); }
+
+        /* Custom Modern Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #F1F5F9; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
     </style>
 </head>
 
-<body class="bg-halftone text-slate-900 antialiased overflow-hidden selection:bg-yellow-300 selection:text-black">
-    <div class="flex h-screen w-full">
+<body class="bg-[#FAFAFA] text-slate-800 antialiased selection:bg-slate-900 selection:text-white overflow-hidden min-h-screen">
+    
+    <div class="flex h-screen w-full overflow-hidden">
         
-        <!-- SIDEBAR PENGHUNI (COMIC STYLE) -->
-        <aside class="w-64 bg-white flex flex-col transition-all duration-300 z-30 hidden md:flex border-r-4 border-black shadow-[8px_0_0_0_rgba(0,0,0,1)]">
+        <!-- ========================================== -->
+        <!-- SIDEBAR BACKDROP (Mobile only) -->
+        <!-- ========================================== -->
+        <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity duration-300"></div>
+
+        <!-- ========================================== -->
+        <!-- SIDEBAR PENGHUNI (MODERN MINIMALIST) -->
+        <!-- ========================================== -->
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-72 bg-white border-r border-slate-200/80 flex flex-col justify-between h-full z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-xl lg:shadow-none">
             
-            <!-- Logo Sidebar -->
-            <div class="h-20 flex items-center justify-center px-6 border-b-4 border-black bg-yellow-400">
-                <div class="text-center transform -rotate-2 hover:rotate-0 transition-transform cursor-pointer">
-                    <h1 class="font-komik text-3xl text-black drop-shadow-[2px_2px_0_#fff]">KOSAN LALAN</h1>
-                    <span class="bg-black text-white text-[10px] px-2 py-1 uppercase tracking-widest border-2 border-white rounded-full">Panel Penghuni</span>
-                </div>
-            </div>
+            <div class="flex flex-col flex-1 min-h-0">
+                <!-- Brand Header -->
+                <div class="h-20 flex items-center justify-between px-6 border-b border-slate-100">
+                    <a href="{{ route('user.dashboard') }}" class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-base shadow-sm group-hover:bg-slate-800 transition-colors shrink-0">
+                            KL
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-base text-slate-900 tracking-tight leading-none group-hover:text-slate-700 transition-colors">KOSAN LALAN</span>
+                            <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Portal Penghuni</span>
+                        </div>
+                    </a>
 
-            <nav class="flex-1 px-4 py-6 space-y-3">
-                <!-- Menu Beranda -->
-                <a href="{{ route('user.dashboard') }}" class="flex items-center px-4 py-3 bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span class="text-lg font-bold">Beranda</span>
-                </a>
-                
-                <!-- Menu Tagihan -->
-                <a href="{{ route('user.tagihan') }}" class="flex items-center px-4 py-3 bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    <span class="text-lg font-bold">Tagihan Saya</span>
-                </a>
-
-                <!-- Menu Profil -->
-                <a href="{{ route('user.profile') }}" class="flex items-center px-4 py-3 bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                    <span class="text-lg font-bold">Profil & Keamanan</span>
-                </a>
-
-                <!-- Menu Lapor Keluhan (AKTIF) -->
-                <a href="{{ route('user.pengaduan') }}" class="flex items-center px-4 py-3 bg-cyan-400 border-black translate-x-1 shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-                    <span class="text-lg font-bold">Lapor Keluhan</span>
-                </a>
-            </nav>
-
-            <!-- Tombol Keluar -->
-            <div class="p-4 border-t-4 border-black bg-white">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="w-full flex items-center justify-center px-4 py-3 bg-red-500 border-2 border-black hover:-translate-y-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] text-white rounded-xl text-lg font-bold transition-all active:translate-y-0 active:shadow-none">
-                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        KABUUR! (Logout)
+                    <!-- Close Button for Mobile -->
+                    <button type="button" onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
-                </form>
+                </div>
+
+                <!-- Navigasi Menu Penghuni -->
+                <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+                    <!-- RUMUS COMBO NOTIF (FULL DATABASE BERDASARKAN CONTROLLER YASA) -->
+                    @php
+                        $user = Auth::user();
+                        $notifTagihan = 0;
+                        
+                        // 1. Hitung Notif Tagihan
+                        $penghuniBadge = \App\Models\Penghuni::where('user_id', $user->id)->first();
+                        if($penghuniBadge) {
+                            $notifTagihan = \App\Models\Tagihan::where('penghuni_id', $penghuniBadge->id)
+                                ->whereIn('status', ['Belum Lunas', 'Ditolak'])
+                                ->count();
+                        }
+
+                        // 2. Hitung Notif Pengumuman (LANGSUNG CEK KE TABEL PIVOT)
+                        $jumlahPengumuman = \App\Models\Pengumuman::where('status', 'Aktif')
+                            ->whereDoesntHave('users', function($q) use ($user) {
+                                $q->where('user_id', $user->id)->whereNotNull('read_at');
+                            })->count();
+                    @endphp
+
+                    <div class="px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        Menu Utama
+                    </div>
+
+                    <!-- Dashboard / Beranda -->
+                    <a href="{{ route('user.dashboard') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('user.dashboard') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('user.dashboard') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                        </svg>
+                        <span>Beranda</span>
+                    </a>
+                    
+                    <!-- Tagihan Saya (DENGAN NOTIF) -->
+                    <a href="{{ route('user.tagihan') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('user.tagihan*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('user.tagihan*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6H2.25m0 0v11.25a2.25 2.25 0 002.25 2.25h15m0-15.75H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25zM15.75 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>Tagihan Saya</span>
+                        </div>
+                        @if($notifTagihan > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full shadow-xs">
+                                {{ $notifTagihan }}
+                            </span>
+                        @endif
+                    </a>
+                    
+                    <!-- Lapor Keluhan (Aktif) -->
+                    <a href="{{ route('user.pengaduan') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('user.pengaduan*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('user.pengaduan*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                        </svg>
+                        <span>Lapor Keluhan</span>
+                    </a>
+
+                    <!-- pengumuman (DENGAN NOTIF RAPI) -->
+                    <a href="{{ route('user.pengumuman') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('user.pengumuman*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('user.pengumuman*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                            </svg>
+                            <span>Pengumuman</span>
+                        </div>
+                        @if(isset($jumlahPengumuman) && $jumlahPengumuman > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full animate-pulse shadow-xs">
+                                {{ $jumlahPengumuman }}
+                            </span>
+                        @endif
+                    </a>
+
+                    <div class="pt-4 px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        Akun Anda
+                    </div>
+
+                    <!-- Profil & Keamanan -->
+                    <a href="{{ route('user.profile') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('user.profile*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('user.profile*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                        <span>Profil & Keamanan</span>
+                    </a>
+                </nav>
             </div>
         </aside>
 
+        <!-- ========================================== -->
         <!-- KONTEN UTAMA -->
-        <main class="flex-1 flex flex-col h-screen relative z-10 overflow-hidden">
+        <!-- ========================================== -->
+        <main class="flex-1 flex flex-col h-screen relative z-10 overflow-hidden min-w-0">
             
-            <!-- Header (Top Bar) -->
-            <header class="h-20 bg-white border-b-4 border-black flex items-center justify-between px-8 z-20 shadow-[0_4px_0_0_rgba(0,0,0,1)] relative">
-                <h2 class="text-2xl font-komik text-black tracking-widest drop-shadow-[1px_1px_0_#fff]">LAPOR KELUHAN</h2>
-                <div class="flex items-center gap-3 bg-yellow-300 border-2 border-black py-2 px-5 rounded-full shadow-[2px_2px_0_0_rgba(0,0,0,1)] cursor-pointer hover:-translate-y-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all">
-                    <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-                        <span class="text-white text-lg font-komik">{{ substr(Auth::user()->name, 0, 1) }}</span>
+            <!-- Topbar -->
+            <header class="h-20 bg-white/85 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-6 sm:px-8 z-30 sticky top-0">
+                <div class="flex items-center gap-4">
+                    <button type="button" onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                    <div>
+                        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                            <a href="{{ route('user.dashboard') }}" class="hover:text-slate-700 transition-colors">Portal Penghuni</a>
+                            <span>/</span>
+                            <span class="text-slate-700">Pengumuman</span>
+                        </div>
+                        <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight leading-tight mt-0.5">Semua Siaran Informasi</h2>
                     </div>
-                    <span class="text-base font-bold text-black uppercase">{{ Auth::user()->name }}</span>
                 </div>
-            </header>
 
-            <!-- Area Konten -->
-            <div class="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth relative">
-                <div class="w-full max-w-6xl mx-auto pb-20">
-
-                    <!-- ALERT SUKSES (COMIC STYLE) -->
-                    @if(session('success'))
-                    <div class="mb-8 p-4 bg-green-400 border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] flex items-start gap-4 animate-pop transform rotate-1">
-                        <div class="w-10 h-10 rounded-full bg-white border-2 border-black flex items-center justify-center text-black shrink-0 font-komik text-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
-                            OK!
-                        </div>
-                        <div>
-                            <h4 class="text-xl font-komik text-black tracking-wide">MANTAP BRO! Laporan Terkirim!</h4>
-                            <p class="text-base font-bold text-black mt-1">{{ session('success') }}</p>
-                        </div>
+                <!-- Right Actions & Profile Dropdown -->
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <!-- Tanggal Hari Ini -->
+                    <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-semibold text-slate-600">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                        </svg>
+                        <span>{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</span>
                     </div>
-                    @endif
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                        
-                        <!-- FORM PENGADUAN (KIRI) -->
-                        <div class="lg:col-span-1">
-                            <div class="bg-cyan-200 border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] rounded-3xl p-8 sticky top-6 animate-pop comic-card relative">
-                                <!-- Ornamen -->
-                                <div class="absolute -top-5 -left-5 bg-yellow-400 border-4 border-black w-14 h-14 rounded-full flex items-center justify-center transform -rotate-12 shadow-[4px_4px_0_0_rgba(0,0,0,1)] z-10">
-                                    <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button type="button" onclick="toggleDropdown()" id="profilButton" class="flex items-center gap-3 p-1.5 sm:px-3 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs transition-all focus:outline-none">
+                            @if(Auth::user()->foto_profil)
+                                <img src="{{ asset('storage/profil/' . Auth::user()->foto_profil) }}" alt="Profil" class="w-8 h-8 rounded-xl object-cover border border-slate-200 shrink-0 bg-slate-100">
+                            @else
+                                <div class="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                                 </div>
+                            @endif
+                            <div class="hidden sm:flex flex-col text-left">
+                                <span class="text-xs font-bold text-slate-900 leading-tight">{{ Auth::user()->name }}</span>
+                                <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                                    {{ isset($penghuni) && $penghuni->kamar ? 'Kamar ' . trim(str_ireplace('kamar', '', $penghuni->kamar->nomor_kamar)) : 'Penghuni' }}
+                                </span>
+                            </div>
+                            <svg class="w-4 h-4 text-slate-400 hidden sm:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
 
-                                <h3 class="text-3xl font-komik text-black tracking-wide mb-2 mt-2">ADA MASALAH?</h3>
-                                <p class="text-base text-black font-bold mb-6 border-b-4 border-black pb-4 border-dotted">Fasilitas kos rusak? Air mati? Ketik di sini, Admin bakal langsung sikat!</p>
-
-                                <form action="{{ route('user.pengaduan.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+                        <!-- Dropdown Menu -->
+                        <div id="profilDropdown" class="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200/80 overflow-hidden hidden opacity-0 transition-all duration-200 transform origin-top-right scale-95 z-50">
+                            <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+                                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Penghuni Kos</p>
+                                <p class="text-sm font-bold text-slate-900 truncate">{{ Auth::user()->name }}</p>
+                                <p class="text-xs text-slate-500 truncate mt-0.5">&#64;{{ Auth::user()->username ?? 'user_kos' }}</p>
+                            </div>
+                            
+                            <div class="p-2">
+                                <a href="{{ route('user.profile') }}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                    </svg>
+                                    <span>Pengaturan Profil</span>
+                                </a>
+                            </div>
+                            
+                            <div class="p-2 border-t border-slate-100">
+                                <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <div>
-                                        <label class="block text-lg font-bold text-black mb-2 uppercase">Judul Laporan <span class="text-red-600">*</span></label>
-                                        <input type="text" name="judul" required placeholder="Cth: Keran Kamar Mandi Bocor!" class="w-full px-4 py-3 rounded-xl comic-input text-lg bg-white">
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="block text-lg font-bold text-black mb-2 uppercase">Deskripsi Detail <span class="text-red-600">*</span></label>
-                                        <textarea name="deskripsi" required rows="4" placeholder="Jelasin kerusakannya sedetail mungkin bro..." class="w-full px-4 py-3 rounded-xl comic-input text-lg bg-white resize-none"></textarea>
-                                    </div>
-                                    
-                                    <div>
-                                        <label class="block text-lg font-bold text-black mb-2 uppercase">Foto Bukti <span class="text-sm normal-case">(Opsional)</span></label>
-                                        <input type="file" name="foto" accept="image/*" class="w-full comic-input bg-white rounded-xl file:mr-4 file:py-3 file:px-4 file:border-0 file:border-r-4 file:border-black file:text-base file:font-bold file:bg-yellow-300 file:text-black hover:file:bg-yellow-400 cursor-pointer overflow-hidden">
-                                        <p class="text-sm font-bold text-black mt-2 bg-white inline-block px-2 border-2 border-black transform rotate-1">*Format: JPG, PNG. Maks: 2MB.</p>
-                                    </div>
-
-                                    <button type="submit" class="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-komik text-2xl tracking-widest rounded-xl border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none transition-all mt-4">
-                                        KIRIM LAPORAN!
+                                    <button type="submit" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
+                                        <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                                        </svg>
+                                        <span>Keluar (Logout)</span>
                                     </button>
                                 </form>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </header>
 
-                        <!-- RIWAYAT PENGADUAN (KANAN) -->
-                        <div class="lg:col-span-2">
-                            <div class="bg-white border-4 border-black rounded-3xl shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden animate-pop delay-1 comic-card">
-                                
-                                <!-- Header Riwayat -->
-                                <div class="p-6 border-b-4 border-black bg-yellow-300 flex items-center justify-between">
-                                    <h3 class="text-3xl font-komik text-black tracking-widest drop-shadow-[2px_2px_0_#fff]">JEJAK LAPORAN LU</h3>
-                                    <div class="w-10 h-10 bg-white border-4 border-black rounded-full flex items-center justify-center font-bold text-black animate-bounce shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
-                                        !
-                                    </div>
-                                </div>
+            <!-- Scrollable Content Area -->
+            <div class="flex-1 overflow-y-scroll p-6 sm:p-8 space-y-6">
+                
+                <!-- ALERT SUKSES / ERROR -->
+                @if(session('success'))
+                <div id="alertSuccess" class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm font-semibold flex items-center justify-between gap-3 shadow-xs animate-fade-in">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 text-sm font-bold shadow-xs">✓</span>
+                        <p>{{ session('success') }}</p>
+                    </div>
+                    <button type="button" onclick="document.getElementById('alertSuccess').remove()" class="text-emerald-500 hover:text-emerald-800 p-1.5 rounded-lg hover:bg-emerald-100/60 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                @endif
 
-                                <div class="p-6 md:p-8 bg-slate-50">
-                                    @forelse($pengaduans as $item)
-                                        <div class="mb-6 p-6 border-4 border-black rounded-2xl bg-white shadow-[6px_6px_0_0_rgba(0,0,0,1)] relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-[8px_8px_0_0_rgba(0,0,0,1)]">
-                                            
-                                            <!-- Pola Latar Belakang Garis -->
-                                            <div class="absolute right-0 top-0 bottom-0 w-32 opacity-10 pointer-events-none" style="background-image: repeating-linear-gradient(45deg, #000 0, #000 2px, transparent 2px, transparent 8px);"></div>
-                                            
-                                            <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4 relative z-10">
-                                                <div>
-                                                    <h4 class="text-2xl font-komik text-black tracking-wide uppercase">{{ $item->judul }}</h4>
-                                                    <p class="text-sm font-bold text-slate-500 mt-1 border-b-2 border-black inline-block pb-1">{{ \Carbon\Carbon::parse($item->created_at)->format('d M Y, H:i') }} WIB</p>
-                                                </div>
-                                                
-                                                <!-- BADGE STATUS KOMIK -->
-                                                <div>
-                                                    @if($item->status == 'Menunggu')
-                                                        <span class="inline-flex items-center px-4 py-1.5 rounded-lg text-sm font-black bg-slate-200 text-black border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform -rotate-2 uppercase">Menunggu Respon...</span>
-                                                    @elseif($item->status == 'Diproses')
-                                                        <span class="inline-flex items-center px-4 py-1.5 rounded-lg text-sm font-black bg-yellow-400 text-black border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform rotate-2 uppercase animate-pulse">Sedang Diproses 🛠️</span>
-                                                    @else
-                                                        <span class="inline-flex items-center px-4 py-1.5 rounded-lg text-sm font-black bg-green-400 text-black border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform -rotate-1 uppercase">Selesai Diperbaiki ✅</span>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- ISI DESKRIPSI -->
-                                            <div class="text-lg text-black font-bold bg-cyan-50 p-4 rounded-xl border-2 border-black shadow-inner relative z-10">
-                                                "{{ $item->deskripsi }}"
-                                            </div>
-                                            
-                                            <!-- LAMPIRAN FOTO -->
-                                            @if($item->foto)
-                                                <div class="mt-4 relative z-10">
-                                                    <p class="text-sm font-black text-black uppercase tracking-wider mb-2 bg-yellow-200 inline-block px-2 border-2 border-black transform rotate-1">Lampiran Bukti:</p>
-                                                    <br>
-                                                    <a href="{{ asset('storage/' . $item->foto) }}" target="_blank" class="inline-block mt-1">
-                                                        <img src="{{ asset('storage/' . $item->foto) }}" alt="Bukti Rusak" class="w-40 h-32 object-cover rounded-xl border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:scale-105 transition-all">
-                                                    </a>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    @empty
-                                        <!-- KONDISI KOSONG -->
-                                        <div class="text-center py-16 bg-white border-4 border-black border-dashed rounded-2xl">
-                                            <div class="w-24 h-24 bg-yellow-300 border-4 border-black rounded-full flex items-center justify-center mx-auto mb-4 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform rotate-6 animate-pulse">
-                                                <svg class="w-12 h-12 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                                            </div>
-                                            <h3 class="text-3xl font-komik text-black tracking-widest">KOSONG MLOMPONG!</h3>
-                                            <p class="text-lg font-bold text-slate-600 mt-2">Belum ada laporan keluhan.<br>Kos Lalan aman terkendali! 😎</p>
-                                        </div>
-                                    @endforelse
+                @if($errors->any())
+                <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-sm font-semibold shadow-xs animate-fade-in">
+                    <div class="flex items-start gap-3">
+                        <span class="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 text-sm font-bold shadow-xs">!</span>
+                        <div class="flex-1">
+                            <p class="font-bold">Ada beberapa kendala pengisian formulir:</p>
+                            <ul class="mt-1 list-disc list-inside text-xs font-medium text-rose-700 space-y-0.5">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <!-- 4 KARTU METRIK RINGKASAN KELUHAN (STATIS) -->
+                @php
+                    $totalKeluhan = count($pengaduans);
+                    $totalMenunggu = collect($pengaduans)->where('status', 'Menunggu')->count();
+                    $totalDiproses = collect($pengaduans)->where('status', 'Diproses')->count();
+                    $totalSelesai = collect($pengaduans)->where('status', 'Selesai')->count();
+                @endphp
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    
+                    <!-- 1. Total Laporan -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Laporan</span>
+                                <!-- Icon Bulat Statis -->
+                                <div class="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-200/80 flex items-center justify-center text-indigo-500 shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                    </svg>
                                 </div>
+                            </div>
+                            <div class="flex items-baseline gap-2">
+                                <h3 class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ $totalKeluhan }}</h3>
+                                <span class="text-xs text-slate-400 font-medium">Tiket Terkirim</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                            <span>Layanan:</span>
+                            <span class="font-semibold text-slate-700">Fasilitas Kos</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Menunggu Respon -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Menunggu Respon</span>
+                                <!-- Icon Bulat Statis -->
+                                <div class="w-10 h-10 rounded-full bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-500 shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex items-baseline gap-2">
+                                <h3 class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ $totalMenunggu }}</h3>
+                                <span class="text-xs text-slate-400 font-medium">Dalam Antrean</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                            <span>Status:</span>
+                            <span class="font-semibold text-slate-600">Pending Review</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Sedang Diproses -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Sedang Dikerjakan</span>
+                                <!-- Icon Bulat Statis -->
+                                <div class="w-10 h-10 rounded-full bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-500 shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.07a4.5 4.5 0 004.486-6.32l-3.27 3.27a1.5 1.5 0 01-2.122-2.122l3.27-3.27a4.5 4.5 0 00-6.32 4.486c.118.58.094 1.193-.07 1.743" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex items-baseline gap-2">
+                                <h3 class="text-3xl font-extrabold text-amber-600 tracking-tight">{{ $totalDiproses }}</h3>
+                                <span class="text-xs text-slate-400 font-medium">Perbaikan Aktif</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                            <span class="text-slate-500">Penanganan:</span>
+                            @if($totalDiproses > 0)
+                                <span class="font-bold text-amber-600">Teknisi Bertugas &rarr;</span>
+                            @else
+                                <span class="font-semibold text-slate-600">Tidak Ada Kendala</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- 4. Selesai Diperbaiki -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tuntas Diselesaikan</span>
+                                <!-- Icon Bulat Statis -->
+                                <div class="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-500 shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex items-baseline gap-2">
+                                <h3 class="text-3xl font-extrabold text-emerald-600 tracking-tight">{{ $totalSelesai }}</h3>
+                                <span class="text-xs text-slate-400 font-medium">Keluhan Selesai</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                            <span>Status:</span>
+                            <span class="font-semibold text-emerald-600">Teratasi 100%</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- MAIN GRID: FORM PENGADUAN (KIRI) & RIWAYAT LAPORAN (KANAN) -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in delay-2">
+                    
+                    <!-- ========================================== -->
+                    <!-- KOLOM KIRI: FORM LAPOR KELUHAN (4/12) -->
+                    <!-- ========================================== -->
+                    <div class="lg:col-span-5 xl:col-span-4 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-md sticky top-24">
+                        
+                        <div class="flex items-center gap-3 pb-5 mb-5 border-b border-slate-100">
+                            <div class="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-xs">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-extrabold text-slate-900 tracking-tight leading-tight">Buat Laporan Baru</h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Sampaikan kendala fasilitas ke pengelola</p>
                             </div>
                         </div>
 
+                        <form action="{{ route('user.pengaduan.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                            @csrf
+                            
+                            <!-- Judul Laporan -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                                    Judul Kendala <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text" name="judul" required placeholder="Contoh: Keran Kamar Mandi Bocor" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all">
+                            </div>
+
+                            <!-- Deskripsi Laporan -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                                    Rincian Kerusakan / Masalah <span class="text-rose-500">*</span>
+                                </label>
+                                <textarea name="deskripsi" required rows="4" placeholder="Jelaskan kendala secara detail agar teknisi dapat membawa peralatan yang tepat..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all resize-none"></textarea>
+                            </div>
+
+                            <!-- Lampiran Foto Bukti -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                                    Foto Bukti Fisik <span class="text-xs text-slate-400 font-normal lowercase">(opsional)</span>
+                                </label>
+                                <input type="file" name="foto" id="inputFotoKeluhan" accept="image/*" onchange="previewUploadImage(this, 'previewFotoKeluhan')" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-900 file:text-white hover:file:bg-slate-800 cursor-pointer focus:outline-none">
+                                <p class="text-[11px] text-slate-400 mt-1">Format: JPG, JPEG, PNG (Maks 2 MB).</p>
+                            </div>
+
+                            <!-- Preview Foto Mini -->
+                            <div id="previewContainerKeluhan" class="hidden p-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-center relative">
+                                <img id="previewFotoKeluhan" src="" alt="Pratinjau Foto" class="w-full h-auto max-h-36 object-contain rounded-xl bg-white mx-auto">
+                            </div>
+
+                            <!-- Tombol Kirim -->
+                            <button type="submit" class="w-full mt-2 py-3 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 group">
+                                <span>Kirim Laporan Pengaduan</span>
+                                <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg>
+                            </button>
+                        </form>
+
                     </div>
+
+                    <!-- ========================================== -->
+                    <!-- KOLOM KANAN: RIWAYAT PENGADUAN (8/12) -->
+                    <!-- ========================================== -->
+                    <div class="lg:col-span-7 xl:col-span-8 space-y-5">
+                        
+                        <!-- Toolbar Filter & Search -->
+                        <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <!-- Search Box -->
+                            <div class="relative flex-1 min-w-0">
+                                <input type="text" id="pengaduanSearchInput" onkeyup="applyPengaduanFilter()" placeholder="Cari judul keluhan, deskripsi, atau tanggal..." class="w-full pl-9 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all">
+                                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                                <button type="button" id="clearPengaduanSearchBtn" onclick="clearPengaduanSearch()" class="hidden absolute right-3 top-2.5 text-slate-400 hover:text-slate-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+
+                            <!-- Filter Tabs -->
+                            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 shrink-0">
+                                <button type="button" onclick="setPengaduanStatusFilter('all')" id="btnFilterAll" class="pengaduan-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white shadow-xs transition-all shrink-0">
+                                    Semua ({{ $totalKeluhan }})
+                                </button>
+                                <button type="button" onclick="setPengaduanStatusFilter('Menunggu')" id="btnFilterMenunggu" class="pengaduan-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80 transition-all shrink-0">
+                                    Menunggu ({{ $totalMenunggu }})
+                                </button>
+                                <button type="button" onclick="setPengaduanStatusFilter('Diproses')" id="btnFilterDiproses" class="pengaduan-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 hover:bg-amber-100 transition-all shrink-0 flex items-center gap-1.5">
+                                    <span>Diproses ({{ $totalDiproses }})</span>
+                                </button>
+                                <button type="button" onclick="setPengaduanStatusFilter('Selesai')" id="btnFilterSelesai" class="pengaduan-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80 transition-all shrink-0">
+                                    Selesai ({{ $totalSelesai }})
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Daftar Tiket Pengaduan (Cards) -->
+                        <div id="pengaduanListContainer" class="space-y-4">
+                            @forelse($pengaduans as $item)
+                            <div class="pengaduan-card bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md relative overflow-hidden group"
+                                 data-status="{{ $item->status }}"
+                                 data-search="{{ strtolower($item->judul . ' ' . $item->deskripsi . ' ' . $item->status . ' ' . \Carbon\Carbon::parse($item->created_at)->translatedFormat('d F Y')) }}">
+                                
+                                <!-- Card Header -->
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h4 class="text-base font-extrabold text-slate-900 tracking-tight">
+                                                {{ $item->judul }}
+                                            </h4>
+                                        </div>
+                                        <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-400 font-medium">
+                                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span>{{ \Carbon\Carbon::parse($item->created_at)->translatedFormat('d F Y, H:i') }} WIB</span>
+                                            <span>&bull;</span>
+                                            <span>{{ \Carbon\Carbon::parse($item->created_at)->diffForHumans() }}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Status Badges & Delete Button -->
+                                    <div class="shrink-0 flex items-center gap-2">
+                                        @if($item->status == 'Menunggu')
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold shadow-2xs">
+                                                <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                                                <span>Menunggu Respon</span>
+                                            </span>
+                                        @elseif($item->status == 'Diproses')
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200/80 text-xs font-bold shadow-2xs">
+                                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                                <span>Sedang Diproses</span>
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-xs font-bold shadow-2xs">
+                                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                                <span>Selesai Diperbaiki</span>
+                                            </span>
+                                        @endif
+                                        
+                                        <!-- TOMBOL HAPUS -->
+                                        <button type="button" onclick="openDeleteModal({{ $item->id }}, '{{ addslashes($item->judul) }}')" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all" title="Hapus Laporan">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Card Body (Deskripsi Keluhan) -->
+                                <div class="py-4 space-y-3">
+                                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 text-xs font-medium text-slate-700 leading-relaxed">
+                                        {{ $item->deskripsi }}
+                                    </div>
+
+                                  <!-- Foto Bukti Lampiran -->
+                                    @if($item->foto)
+                                    <div class="pt-2">
+                                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Lampiran Bukti Foto:</span>
+                                        <div class="flex items-center gap-3">
+                                            @php 
+                                                $pathFoto = str_replace('public/', '', $item->foto); 
+                                                $urlFoto = asset('storage/' . $pathFoto);
+                                            @endphp
+
+                                            <div class="relative group/thumb cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50 w-28 h-20 shadow-2xs" onclick="openPreviewModal('{{ $urlFoto }}', '{{ addslashes($item->judul) }}', '{{ \Carbon\Carbon::parse($item->created_at)->format('d M Y') }}')">
+                                                <img src="{{ $urlFoto }}" onerror="this.src='https://via.placeholder.com/150?text=Foto+Rusak'" alt="Foto Keluhan" class="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300">
+                                                <div class="absolute inset-0 bg-slate-900/30 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" /></svg>
+                                                </div>
+                                            </div>
+                                            <button type="button" onclick="openPreviewModal('{{ $urlFoto }}', '{{ addslashes($item->judul) }}', '{{ \Carbon\Carbon::parse($item->created_at)->format('d M Y') }}')" class="text-xs font-bold text-slate-700 hover:text-slate-900 underline underline-offset-4 decoration-slate-300">
+                                                Lihat Gambar Penuh &rarr;
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @endif  
+
+                                <!-- Card Footer: Status Progress Bar Timeline -->
+                                <div class="pt-3 border-t border-slate-100">
+                                    <div class="flex items-center justify-between text-[11px] font-semibold text-slate-400 mb-1.5">
+                                        <span>Progres Penanganan</span>
+                                        <span class="font-bold text-slate-700">
+                                            @if($item->status == 'Menunggu') 1/3 (Diterima)
+                                            @elseif($item->status == 'Diproses') 2/3 (Pengerjaan)
+                                            @else 3/3 (Tuntas)
+                                            @endif
+                                        </span>
+                                    </div>
+                                    <div class="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden flex">
+                                        <div class="h-full bg-slate-900 transition-all duration-500 {{ $item->status == 'Menunggu' ? 'w-1/3' : ($item->status == 'Diproses' ? 'w-2/3 bg-amber-500' : 'w-full bg-emerald-500') }}"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            @empty
+                            <div class="py-16 text-center bg-white rounded-3xl border border-slate-200/80 shadow-sm p-8">
+                                <div class="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 mx-auto mb-4">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-base font-bold text-slate-900">Tidak Ada Keluhan Aktif</h3>
+                                <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Semua fasilitas kos berjalan normal. Jika ada kerusakan di kamar atau area kos, gunakan formulir di samping untuk melapor.</p>
+                            </div>
+                            @endforelse
+                        </div>
+
+                        <!-- No Result Alert (When Filter or Search is Empty) -->
+                        <div id="noResultsPengaduan" class="hidden py-16 text-center bg-white rounded-3xl border border-slate-200/80 shadow-sm p-8">
+                            <div class="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 mx-auto mb-4">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-base font-bold text-slate-900">Laporan Tidak Ditemukan</h3>
+                            <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Tidak ada tiket pengaduan yang sesuai dengan pencarian atau filter status yang Anda pilih.</p>
+                            <button type="button" onclick="clearPengaduanSearch()" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-all">
+                                Reset Filter
+                            </button>
+                        </div>
+
+                    </div>
+
                 </div>
+
             </div>
         </main>
     </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL OVERLAY & MODAL PREVIEW FOTO -->
+    <!-- ========================================== -->
+    <!-- Overlay Global digunakan untuk Foto & Hapus -->
+    <div id="modalOverlayGlobal" onclick="closeAllModals()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden transition-opacity opacity-0 duration-300"></div>
+
+    <!-- Modal Preview Foto -->
+    <div id="modalPreviewBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg hidden p-4">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden modal-enter w-full p-6 sm:p-8 text-center max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-100">
+                <div class="text-left">
+                    <h3 class="text-base font-extrabold text-slate-900" id="labelPreviewJudul">Lampiran Foto Keluhan</h3>
+                    <p class="text-xs text-slate-400 mt-0.5" id="labelPreviewTanggal"></p>
+                </div>
+                <button type="button" onclick="closePreviewModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 mb-5">
+                <img id="imgPreviewFull" src="" alt="Foto Kerusakan" class="w-full h-auto max-h-96 object-contain rounded-xl bg-white border border-slate-200 mx-auto">
+            </div>
+
+            <button type="button" onclick="closePreviewModal()" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-all">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div id="modalDeleteBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm hidden p-4">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden modal-enter w-full p-6 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-100 text-rose-500 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-900 mb-1">Hapus Keluhan?</h3>
+            <p class="text-sm text-slate-500 mb-6">Apakah Anda yakin ingin menghapus laporan <span id="deleteKeluhanTitle" class="font-bold text-slate-700"></span>? Laporan yang dihapus tidak dapat dikembalikan.</p>
+            
+            <form id="formDeleteKeluhan" method="POST" action="" class="flex gap-3">
+                @csrf
+                @method('DELETE')
+                <button type="button" onclick="closeDeleteModal()" class="w-1/2 py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition-all">Batal</button>
+                <button type="submit" class="w-1/2 py-2.5 px-4 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-semibold text-sm shadow-sm transition-all">Ya, Hapus</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT JS (FILTER, PREVIEW, DROPDOWN, SIDEBAR) -->
+    <script>
+        const overlayGlobal = document.getElementById('modalOverlayGlobal');
+        let currentStatusFilter = 'all';
+
+        // Fungsi Tutup Semua Modal jika area gelap di-klik
+        function closeAllModals() {
+            closePreviewModal();
+            closeDeleteModal();
+        }
+
+        // Modal Konfirmasi Hapus
+        function openDeleteModal(id, title) {
+            document.getElementById('deleteKeluhanTitle').innerText = '"' + title + '"';
+            document.getElementById('formDeleteKeluhan').action = `/user/pengaduan/${id}`;
+            
+            const modal = document.getElementById('modalDeleteBox');
+            const content = modal.querySelector('div');
+
+            overlayGlobal.classList.remove('hidden');
+            modal.classList.remove('hidden');
+
+            setTimeout(() => {
+                overlayGlobal.classList.remove('opacity-0');
+                if (content) {
+                    content.classList.remove('modal-leave-active', 'modal-leave');
+                    content.classList.add('modal-enter-active');
+                }
+            }, 10);
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('modalDeleteBox');
+            const content = modal.querySelector('div');
+
+            overlayGlobal.classList.add('opacity-0');
+            if (content) {
+                content.classList.remove('modal-enter-active');
+                content.classList.add('modal-leave-active');
+            }
+
+            setTimeout(() => {
+                overlayGlobal.classList.add('hidden');
+                modal.classList.add('hidden');
+                if (content) {
+                    content.classList.remove('modal-leave-active');
+                    content.classList.add('modal-enter');
+                }
+            }, 200);
+        }
+
+        // Modal Preview Foto
+        function openPreviewModal(imgUrl, judul, tanggal) {
+            document.getElementById('imgPreviewFull').src = imgUrl;
+            document.getElementById('labelPreviewJudul').innerText = judul;
+            document.getElementById('labelPreviewTanggal').innerText = 'Dilaporkan pada: ' + tanggal;
+            
+            const modal = document.getElementById('modalPreviewBox');
+            const content = modal.querySelector('div');
+
+            overlayGlobal.classList.remove('hidden');
+            modal.classList.remove('hidden');
+
+            setTimeout(() => {
+                overlayGlobal.classList.remove('opacity-0');
+                if (content) {
+                    content.classList.remove('modal-leave-active', 'modal-leave');
+                    content.classList.add('modal-enter-active');
+                }
+            }, 10);
+        }
+
+        function closePreviewModal() {
+            const modal = document.getElementById('modalPreviewBox');
+            const content = modal.querySelector('div');
+
+            overlayGlobal.classList.add('opacity-0');
+            if (content) {
+                content.classList.remove('modal-enter-active');
+                content.classList.add('modal-leave-active');
+            }
+
+            setTimeout(() => {
+                overlayGlobal.classList.add('hidden');
+                modal.classList.add('hidden');
+                if (content) {
+                    content.classList.remove('modal-leave-active');
+                    content.classList.add('modal-enter');
+                }
+            }, 200);
+        }
+
+        // Live Upload Image Preview Helper
+        function previewUploadImage(input, targetImgId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById(targetImgId);
+                    img.src = e.target.result;
+                    img.parentElement.classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Filter Status Tabs
+        function setPengaduanStatusFilter(status) {
+            currentStatusFilter = status;
+
+            const btnAll = document.getElementById('btnFilterAll');
+            const btnMenunggu = document.getElementById('btnFilterMenunggu');
+            const btnDiproses = document.getElementById('btnFilterDiproses');
+            const btnSelesai = document.getElementById('btnFilterSelesai');
+
+            const activeClass = 'pengaduan-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white shadow-xs transition-all shrink-0';
+            const inactiveClass = 'pengaduan-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80 transition-all shrink-0';
+
+            if (btnAll) btnAll.className = (status === 'all') ? activeClass : inactiveClass;
+            if (btnMenunggu) btnMenunggu.className = (status === 'Menunggu') ? activeClass : inactiveClass;
+            if (btnDiproses) btnDiproses.className = (status === 'Diproses') ? activeClass : 'pengaduan-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 hover:bg-amber-100 transition-all shrink-0 flex items-center gap-1.5';
+            if (btnSelesai) btnSelesai.className = (status === 'Selesai') ? activeClass : inactiveClass;
+
+            applyPengaduanFilter();
+        }
+
+        function clearPengaduanSearch() {
+            const input = document.getElementById('pengaduanSearchInput');
+            if (input) input.value = '';
+            setPengaduanStatusFilter('all');
+        }
+
+        // Live Filter & Search Engine
+        function applyPengaduanFilter() {
+            const query = (document.getElementById('pengaduanSearchInput')?.value || '').trim().toLowerCase();
+            const clearBtn = document.getElementById('clearPengaduanSearchBtn');
+
+            if (query.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+
+            const cards = document.querySelectorAll('.pengaduan-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const searchStr = card.getAttribute('data-search') || '';
+                const status = card.getAttribute('data-status') || '';
+
+                const matchQuery = query === '' || searchStr.includes(query);
+                const matchStatus = (currentStatusFilter === 'all') || (status === currentStatusFilter);
+
+                if (matchQuery && matchStatus) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            const noResults = document.getElementById('noResultsPengaduan');
+            if (visibleCount === 0 && cards.length > 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+        }
+
+        // Auto dismiss alert
+        document.addEventListener("DOMContentLoaded", () => {
+            const alertSuccess = document.getElementById('alertSuccess');
+            if (alertSuccess) {
+                setTimeout(() => {
+                    alertSuccess.style.opacity = '0';
+                    alertSuccess.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => alertSuccess.remove(), 500);
+                }, 5000);
+            }
+        });
+
+        // Escape Key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAllModals();
+                const dropdown = document.getElementById('profilDropdown');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    toggleDropdown();
+                }
+            }
+        });
+
+        // Profile Dropdown
+        function toggleDropdown() {
+            const dropdown = document.getElementById('profilDropdown');
+            if (!dropdown) return;
+            
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                setTimeout(() => {
+                    dropdown.classList.remove('opacity-0', 'scale-95');
+                    dropdown.classList.add('opacity-100', 'scale-100');
+                }, 10);
+            } else {
+                dropdown.classList.remove('opacity-100', 'scale-100');
+                dropdown.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => { dropdown.classList.add('hidden'); }, 200); 
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            const button = document.getElementById('profilButton');
+            const dropdown = document.getElementById('profilDropdown');
+            if (button && dropdown && !button.contains(e.target) && !dropdown.contains(e.target)) {
+                if (!dropdown.classList.contains('hidden')) {
+                    dropdown.classList.remove('opacity-100', 'scale-100');
+                    dropdown.classList.add('opacity-0', 'scale-95');
+                    setTimeout(() => { dropdown.classList.add('hidden'); }, 200);
+                }
+            }
+        });
+
+        // Mobile Sidebar Drawer
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (!sidebar || !backdrop) return;
+
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+            }
+        }
+    </script>
 </body>
 </html>

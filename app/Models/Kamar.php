@@ -10,13 +10,18 @@ class Kamar extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nomor_kamar', 'tipe_kamar', 'harga', 'status'
+        'nomor_kamar', 
+        'tipe_kamar', 
+        'harga', 
+        'status',
+        'penghuni_id',        // ID Yasa (Penyewa Utama)
+        'nama_penghuni_asli', // Nama Anton
+        'kekerabatan'         // Saudara/Teman
     ];
 
-    // TAMBAHKAN KODE INI BOSKU 👇
+    // Relasi balik ke tabel Penghuni (Kamar ini punya siapa?)
     public function penghuni()
     {
-        // Menyambungkan Kamar ke Penghuni (Ambil yang statusnya Aktif saja)
-        return $this->hasOne(Penghuni::class, 'kamar_id')->where('status', 'Aktif');
+        return $this->belongsTo(Penghuni::class, 'penghuni_id');
     }
 }

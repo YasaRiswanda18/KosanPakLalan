@@ -3,196 +3,303 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Keuangan - Kos Lalan</title>
+    <title>Laporan Keuangan - Kosan Pak Lalan</title>
     
-    <!-- FONT KOMIK -->
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        /* Paksa Printer Cetak Warna Background! */
+        /* Force print background colors */
         * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            box-sizing: border-box;
         }
 
         body { 
-            font-family: 'Comic Neue', cursive; 
-            font-weight: 700; 
-            color: #000; 
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            color: #0f172a; 
             line-height: 1.5; 
-            padding: 30px; 
+            padding: 40px; 
             background-color: #fff;
+            max-width: 1000px;
+            margin: 0 auto;
         }
-        
-        .font-komik { font-family: 'Bangers', cursive; letter-spacing: 2px; }
 
-        /* HEADER KOMIK BRUTAL */
-        .header-box { 
-            text-align: center; 
-            margin-bottom: 30px; 
-            border: 4px solid #000; 
-            background-color: #fde047; /* Kuning Komik */
-            padding: 15px; 
-            box-shadow: 8px 8px 0px 0px #000;
-            transform: rotate(-1deg);
+        /* HEADER */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 24px;
+            margin-bottom: 28px;
         }
-        .header-box h1 { margin: 0; font-size: 36px; color: #000; }
-        .header-box p { margin: 5px 0 0 0; color: #000; font-size: 16px; border-top: 3px dashed #000; padding-top: 5px; text-transform: uppercase; }
         
-        /* INFO FILTER */
-        .info-filter { 
-            margin-bottom: 20px; 
-            font-size: 14px; 
-            border: 3px solid #000;
-            padding: 10px 15px;
+        .brand-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            margin: 0;
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .report-title {
+            text-align: right;
+        }
+
+        .report-badge {
             display: inline-block;
-            box-shadow: 4px 4px 0px 0px #000;
-            transform: rotate(1deg);
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
         }
 
-        /* TABEL KOMIK */
+        .report-date {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+
+        /* META INFO */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 28px;
+        }
+
+        .meta-item span {
+            display: block;
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-item strong {
+            display: block;
+            font-size: 13px;
+            color: #0f172a;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        /* TABLE */
         table { 
             width: 100%; 
-            border-collapse: collapse; 
-            margin-bottom: 30px; 
-            border: 4px solid #000;
-            box-shadow: 8px 8px 0px 0px #000;
+            border-collapse: separate; 
+            border-spacing: 0;
+            margin-bottom: 24px; 
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
         }
-        th, td { border: 3px solid #000; padding: 12px; text-align: left; }
+
         th { 
-            background-color: #22d3ee; /* Cyan Komik */
-            color: #000; 
-            font-family: 'Bangers', cursive;
-            font-size: 20px; 
-            letter-spacing: 1px;
-            text-transform: uppercase; 
+            background-color: #f8fafc; 
+            color: #475569; 
+            font-size: 11px; 
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
         }
-        td { font-size: 15px; background-color: #fff; }
-        
+
+        td { 
+            font-size: 12px; 
+            color: #334155;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        
-        /* BADGE STATUS */
+
+        /* STATUS BADGES */
         .badge { 
-            padding: 4px 8px; 
-            border: 3px solid #000; 
-            font-weight: bold; 
-            font-size: 12px;
-            text-transform: uppercase;
-            box-shadow: 3px 3px 0px 0px #000;
             display: inline-block;
-            transform: rotate(-2deg);
+            padding: 3px 8px; 
+            border-radius: 6px;
+            font-weight: 700; 
+            font-size: 11px;
+            text-transform: uppercase;
         }
-        .badge-lunas { background-color: #4ade80; color: #000; }
-        .badge-tunggak { background-color: #ef4444; color: #fff; transform: rotate(2deg); }
-        
-        /* KOTAK TOTAL DUIT */
+        .badge-lunas { 
+            background-color: #ecfdf5; 
+            color: #047857; 
+            border: 1px solid #a7f3d0;
+        }
+        .badge-tunggak { 
+            background-color: #fff1f2; 
+            color: #be123c; 
+            border: 1px solid #fecdd3;
+        }
+
+        /* SUMMARY & TOTAL */
+        .summary-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 16px;
+        }
+
         .total-box { 
-            float: right; 
-            border: 4px solid #000; 
-            padding: 15px 30px; 
-            background-color: #4ade80; /* Hijau Duit */
-            box-shadow: 6px 6px 0px 0px #000;
-            transform: rotate(-1deg);
+            background-color: #0f172a; 
+            color: #fff;
+            padding: 18px 24px; 
+            border-radius: 12px;
+            min-width: 280px;
+            text-align: right;
         }
-        .total-box span { display: block; font-size: 14px; font-weight: bold; color: #000; text-transform: uppercase; border-bottom: 3px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
-        .total-box strong { font-family: 'Bangers', cursive; font-size: 28px; letter-spacing: 1px; }
-        
-        .clear { clear: both; }
-        
-        /* TANDA TANGAN ADMIN */
-        .footer { margin-top: 60px; float: right; text-align: center; width: 250px; }
+
+        .total-box span { 
+            display: block; 
+            font-size: 11px; 
+            font-weight: 600; 
+            color: #94a3b8; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+
+        .total-box strong { 
+            display: block;
+            font-size: 22px; 
+            font-weight: 800;
+            color: #10b981;
+            margin-top: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        /* SIGNATURE FOOTER */
+        .footer-section {
+            margin-top: 60px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
         .ttd-box { 
-            border: 4px solid #000; 
-            padding: 10px; 
-            margin-top: 60px; 
-            background-color: #fff;
-            box-shadow: 4px 4px 0px 0px #000;
-            transform: rotate(2deg);
-            font-size: 16px;
+            text-align: center;
+            width: 200px;
         }
-        .ttd-stamp {
-            position: absolute;
-            color: red;
-            font-family: 'Bangers', cursive;
-            font-size: 24px;
-            border: 3px solid red;
-            padding: 2px 10px;
-            border-radius: 10px;
-            transform: rotate(-15deg);
-            margin-top: -45px;
-            margin-left: 20px;
-            opacity: 0.8;
+
+        .ttd-line {
+            border-bottom: 1px solid #0f172a;
+            margin-top: 70px;
+            margin-bottom: 6px;
+        }
+
+        @media print {
+            body { padding: 0; }
         }
     </style>
 </head>
 <body onload="window.print()">
 
-    <!-- HEADER LAPORAN -->
-    <div class="header-box">
-        <h1 class="font-komik">KOS LALAN</h1>
-        <p>LAPORAN REKAPITULASI TAGIHAN & KAS 💸</p>
+    <!-- HEADER -->
+    <div class="header">
+        <div>
+            <h1 class="brand-title">KOSAN PAK LALAN</h1>
+            <p class="brand-subtitle">Sistem Manajemen & Pembukuan Keuangan Hunian</p>
+        </div>
+        <div class="report-title">
+            <span class="report-badge">Laporan Rekapitulasi Kas</span>
+            <div class="report-date">Dicetak: {{ \Carbon\Carbon::now()->format('d M Y, H:i') }} WIB</div>
+        </div>
     </div>
 
-    <!-- FILTER INFO -->
-    <div class="info-filter">
-        <b>PERIODE:</b> {{ request('bulan') ? request('bulan') : 'SEMUA WAKTU' }} <br>
-        <b>PENCARIAN:</b> {{ request('search') ? request('search') : 'KESELURUHAN' }} <br>
-        <b>DICETAK:</b> {{ \Carbon\Carbon::now()->format('d M Y, H:i') }}
+    <!-- META INFO -->
+    <div class="meta-grid">
+        <div class="meta-item">
+            <span>Periode Bulan</span>
+            <strong>{{ request('bulan') ? request('bulan') : 'Semua Periode' }}</strong>
+        </div>
+        <div class="meta-item">
+            <span>Filter Pencarian</span>
+            <strong>{{ request('search') ? request('search') : 'Semua Data Penghuni' }}</strong>
+        </div>
+        <div class="meta-item">
+            <span>Total Tagihan Masuk</span>
+            <strong>{{ $tagihans->count() }} Data Transaksi</strong>
+        </div>
     </div>
 
-    <!-- TABEL UTAMA -->
+    <!-- TABEL REKAP -->
     <table>
         <thead>
             <tr>
-                <th class="text-center" width="5%">NO</th>
-                <th width="20%">PENGHUNI</th>
-                <th width="15%">KAMAR</th>
-                <th width="20%">BULAN</th>
-                <th class="text-right" width="20%">NOMINAL</th>
-                <th class="text-center" width="20%">STATUS</th>
+                <th class="text-center" width="6%">No</th>
+                <th width="26%">Nama Penghuni</th>
+                <th width="16%">Unit Kamar</th>
+                <th width="20%">Periode Tagihan</th>
+                <th class="text-right" width="18%">Nominal</th>
+                <th class="text-center" width="14%">Status</th>
             </tr>
         </thead>
         <tbody>
             @forelse($tagihans as $index => $t)
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
-                <td><strong>{{ $t->penghuni->nama ?? 'PENGHUNI DIHAPUS' }}</strong></td>
-                <td>{{ $t->penghuni->kamar->nomor_kamar ?? 'KOSONG' }}</td>
-                <td>{{ strtoupper($t->bulan_tagihan) }}</td>
-                <td class="text-right font-komik" style="font-size: 18px;">Rp {{ number_format($t->jumlah_bayar, 0, ',', '.') }}</td>
+                <td><strong>{{ $t->penghuni->nama ?? 'Penghuni Telah Dihapus' }}</strong></td>
+                <td>{{ $t->penghuni && $t->penghuni->kamar ? 'Kamar ' . $t->penghuni->kamar->nomor_kamar : 'Kosong' }}</td>
+                <td>{{ $t->bulan_tagihan }}</td>
+                <td class="text-right" style="font-weight: 700;">Rp {{ number_format($t->jumlah_bayar, 0, ',', '.') }}</td>
                 <td class="text-center">
                     @if($t->status == 'Lunas')
-                        <span class="badge badge-lunas">LUNAS ✅</span>
+                        <span class="badge badge-lunas">Lunas</span>
                     @else
-                        <span class="badge badge-tunggak">{{ strtoupper($t->status) }} ❌</span>
+                        <span class="badge badge-tunggak">{{ $t->status }}</span>
                     @endif
                 </td>
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="text-center font-komik" style="padding: 40px; font-size: 24px; color: #555;">
-                    KOSONG MLOMPONG BRO! GAK ADA DATA! 👻
+                <td colspan="6" class="text-center" style="padding: 36px; color: #94a3b8;">
+                    Tidak ada data tagihan yang sesuai dengan filter.
                 </td>
             </tr>
             @endforelse
         </tbody>
     </table>
 
-    <!-- KOTAK TOTAL PEMASUKAN -->
-    <div class="total-box text-right">
-        <span>TOTAL PEMASUKAN LUNAS</span>
-        <strong>Rp {{ number_format($totalPemasukan, 0, ',', '.') }}</strong>
+    <!-- TOTAL KAS -->
+    <div class="summary-wrapper">
+        <div class="total-box">
+            <span>Total Pemasukan Kas (Lunas)</span>
+            <strong>Rp {{ number_format($totalPemasukan, 0, ',', '.') }}</strong>
+        </div>
     </div>
-    
-    <div class="clear"></div>
 
-    <!-- TANDA TANGAN (COMIC STYLE) -->
-    <div class="footer">
-        <p style="margin-bottom: 5px;">Mengetahui,</p>
+    <!-- TANDA TANGAN -->
+    <div class="footer-section">
         <div class="ttd-box">
-            <div class="ttd-stamp">APPROVED!</div>
-            <strong>ADMIN KOS LALAN</strong>
+            <span style="font-size: 11px; color: #64748b;">Mengetahui,</span>
+            <div class="ttd-line"></div>
+            <strong style="font-size: 12px; color: #0f172a;">Pengelola Kosan Lalan</strong>
         </div>
     </div>
 

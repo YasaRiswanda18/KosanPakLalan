@@ -1,369 +1,1016 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tagihan Saya - Kos Lalan</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <title>Tagihan Saya - Kosan Pak Lalan</title>
     
-    <!-- FONT KOMIK DARI GOOGLE -->
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* Pengaturan Font Dasar */
-        body { font-family: 'Comic Neue', cursive; font-weight: 700; }
-        .font-komik { font-family: 'Bangers', cursive; letter-spacing: 2px; }
-        
-        /* Background Titik-Titik Ala Kertas Komik (Halftone) */
-        .bg-halftone {
-            background-color: #f8fafc;
-            background-image: radial-gradient(#94a3b8 2px, transparent 2px);
-            background-size: 24px 24px;
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FAFAFA;
         }
 
-        /* Animasi Pop-up Komik */
-        .animate-pop { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.8); }
-        @keyframes popIn { to { opacity: 1; transform: scale(1); } }
-        
-        /* Efek Hover Kartu Komik */
-        .comic-card { transition: all 0.2s ease-in-out; }
-        .comic-card:hover { transform: translate(-4px, -4px); box-shadow: 12px 12px 0px 0px rgba(0,0,0,1); }
-        
-        /* Input Komik */
-        .comic-input {
-            border: 3px solid black;
-            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
-            transition: all 0.2s;
+        /* Modal Transitions */
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.96) translateY(8px);
         }
-        .comic-input:focus {
-            outline: none;
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
-            background-color: #fef08a;
+        .modal-enter-active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-leave {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+        .modal-leave-active {
+            opacity: 0;
+            transform: scale(0.96) translateY(8px);
+            transition: all 0.2s cubic-bezier(0.4, 0, 1, 1);
+        }
+
+        /* Custom Modern Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
         }
     </style>
 </head>
 
-<body class="bg-halftone text-slate-900 antialiased overflow-hidden selection:bg-yellow-300 selection:text-black">
-    <div class="flex h-screen w-full">
+<body class="bg-[#FAFAFA] text-slate-800 antialiased selection:bg-slate-900 selection:text-white overflow-hidden min-h-screen">
+    
+    <div class="flex h-screen w-full overflow-hidden">
         
-        <!-- SIDEBAR PENGHUNI (COMIC STYLE) -->
-        <aside class="w-64 bg-white flex flex-col transition-all duration-300 z-30 hidden md:flex border-r-4 border-black shadow-[8px_0_0_0_rgba(0,0,0,1)]">
+        <!-- ========================================== -->
+        <!-- SIDEBAR BACKDROP (Mobile only) -->
+        <!-- ========================================== -->
+        <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity duration-300"></div>
+
+        <!-- ========================================== -->
+        <!-- SIDEBAR PENGHUNI (MODERN MINIMALIST) -->
+        <!-- ========================================== -->
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-72 bg-white border-r border-slate-200/80 flex flex-col justify-between h-full z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-xl lg:shadow-none">
             
-            <!-- Logo Sidebar -->
-            <div class="h-20 flex items-center justify-center px-6 border-b-4 border-black bg-yellow-400">
-                <div class="text-center transform -rotate-2 hover:rotate-0 transition-transform cursor-pointer">
-                    <h1 class="font-komik text-3xl text-black drop-shadow-[2px_2px_0_#fff]">KOSAN LALAN</h1>
-                    <span class="bg-black text-white text-[10px] px-2 py-1 uppercase tracking-widest border-2 border-white rounded-full">Panel Penghuni</span>
-                </div>
-            </div>
+            <div class="flex flex-col flex-1 min-h-0">
+                <!-- Brand Header -->
+                <div class="h-20 flex items-center justify-between px-6 border-b border-slate-100">
+                    <a href="{{ route('user.dashboard') }}" class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-base shadow-sm group-hover:bg-slate-800 transition-colors shrink-0">
+                            KL
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-base text-slate-900 tracking-tight leading-none group-hover:text-slate-700 transition-colors">KOSAN LALAN</span>
+                            <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Portal Penghuni</span>
+                        </div>
+                    </a>
 
-            <nav class="flex-1 px-4 py-6 space-y-3">
-                <!-- Menu Beranda -->
-                <a href="{{ route('user.dashboard') }}" class="flex items-center px-4 py-3 bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span class="text-lg font-bold">Beranda</span>
-                </a>
-                
-                <!-- Menu Tagihan (AKTIF) -->
-                <a href="{{ route('user.tagihan') }}" class="flex items-center px-4 py-3 bg-cyan-400 border-black translate-x-1 shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    <span class="text-lg font-bold">Tagihan Saya</span>
-                </a>
-
-                <!-- Menu Profil -->
-                <a href="{{ route('user.profile') }}" class="flex items-center px-4 py-3 bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                    <span class="text-lg font-bold">Profil & Keamanan</span>
-                </a>
-
-                <!-- Menu Lapor Keluhan -->
-                <a href="{{ route('user.pengaduan') }}" class="flex items-center px-4 py-3 bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-                    <span class="text-lg font-bold">Lapor Keluhan</span>
-                </a>
-            </nav>
-
-            <!-- Tombol Keluar -->
-            <div class="p-4 border-t-4 border-black bg-white">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="w-full flex items-center justify-center px-4 py-3 bg-red-500 border-2 border-black hover:-translate-y-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] text-white rounded-xl text-lg font-bold transition-all active:translate-y-0 active:shadow-none">
-                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        KABUUR! (Logout)
+                    <!-- Close Button for Mobile -->
+                    <button type="button" onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
-                </form>
+                </div>
+
+                <!-- Navigasi Menu Penghuni -->
+                <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+                    
+                    <!-- RUMUS HITUNG NOTIF TAGIHAN -->
+                    @php
+                        $notifTagihan = 0;
+                        if(isset($penghuni) && $penghuni) {
+                            $notifTagihan = \App\Models\Tagihan::where('penghuni_id', $penghuni->id)
+                                ->whereIn('status', ['Belum Lunas', 'Ditolak'])
+                                ->count();
+                        }
+                    @endphp
+
+                    <div class="px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        Menu Utama
+                    </div>
+
+                    <!-- Dashboard / Beranda -->
+                    <a href="{{ route('user.dashboard') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('user.dashboard') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('user.dashboard') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                        </svg>
+                        <span>Beranda</span>
+                    </a>
+                    
+                    <!-- Tagihan Saya (DENGAN NOTIF) -->
+                    <a href="{{ route('user.tagihan') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('user.tagihan*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('user.tagihan*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6H2.25m0 0v11.25a2.25 2.25 0 002.25 2.25h15m0-15.75H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25zM15.75 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>Tagihan Saya</span>
+                        </div>
+                        @if($notifTagihan > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full shadow-xs">
+                                {{ $notifTagihan }}
+                            </span>
+                        @endif
+                    </a>
+                    
+                    <!-- Lapor Keluhan -->
+                    <a href="{{ route('user.pengaduan') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('user.pengaduan*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('user.pengaduan*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                        </svg>
+                        <span>Lapor Keluhan</span>
+                    </a>
+
+                    <!-- pengumuman (DENGAN NOTIF RAPI) -->
+                    <a href="{{ route('user.pengumuman') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('user.pengumuman*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('user.pengumuman*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                            </svg>
+                            <span>Pengumuman</span>
+                        </div>
+                        @if(isset($jumlahPengumuman) && $jumlahPengumuman > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full animate-pulse shadow-xs">
+                                {{ $jumlahPengumuman }}
+                            </span>
+                        @endif
+                    </a>
+
+                    <div class="pt-4 px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        Akun Anda
+                    </div>
+
+                    <!-- Profil & Keamanan -->
+                    <a href="{{ route('user.profile') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('user.profile*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('user.profile*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                        <span>Profil & Keamanan</span>
+                    </a>
+                </nav>
             </div>
         </aside>
 
+        <!-- ========================================== -->
         <!-- KONTEN UTAMA -->
-        <main class="flex-1 flex flex-col h-screen relative z-10 overflow-hidden">
+        <!-- ========================================== -->
+        <main class="flex-1 flex flex-col h-screen relative z-10 overflow-hidden min-w-0">
             
-            <!-- Header (Top Bar) -->
-            <header class="h-20 bg-white border-b-4 border-black flex items-center justify-between px-8 z-20 shadow-[0_4px_0_0_rgba(0,0,0,1)] relative">
-                <h2 class="text-2xl font-komik text-black tracking-widest drop-shadow-[1px_1px_0_#fff]">TAGIHAN GUA</h2>
-                <div class="flex items-center gap-3 bg-yellow-300 border-2 border-black py-2 px-5 rounded-full shadow-[2px_2px_0_0_rgba(0,0,0,1)] cursor-pointer hover:-translate-y-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all">
-                    <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-                        <span class="text-white text-lg font-komik">{{ substr(Auth::user()->name, 0, 1) }}</span>
+            <!-- Topbar -->
+            <header class="h-20 bg-white/85 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-6 sm:px-8 z-30 sticky top-0">
+                <div class="flex items-center gap-4">
+                    <button type="button" onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                    <div>
+                        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                            <a href="{{ route('user.dashboard') }}" class="hover:text-slate-700 transition-colors">Portal Penghuni</a>
+                            <span>/</span>
+                            <span class="text-slate-700">Pengumuman</span>
+                        </div>
+                        <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight leading-tight mt-0.5">Semua Siaran Informasi</h2>
                     </div>
-                    <span class="text-base font-bold text-black uppercase">{{ Auth::user()->name }}</span>
+                </div>
+
+                <!-- Right Actions & Profile Dropdown -->
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <!-- Tanggal Hari Ini -->
+                    <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-semibold text-slate-600">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                        </svg>
+                        <span>{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</span>
+                    </div>
+
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button type="button" onclick="toggleDropdown()" id="profilButton" class="flex items-center gap-3 p-1.5 sm:px-3 sm:py-2 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-xs transition-all focus:outline-none">
+                            @if(Auth::user()->foto_profil)
+                                <img src="{{ asset('storage/profil/' . Auth::user()->foto_profil) }}" alt="Profil" class="w-8 h-8 rounded-xl object-cover border border-slate-200 shrink-0 bg-slate-100">
+                            @else
+                                <div class="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                </div>
+                            @endif
+                            <div class="hidden sm:flex flex-col text-left">
+                                <span class="text-xs font-bold text-slate-900 leading-tight">{{ Auth::user()->name }}</span>
+                                <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                                    {{ isset($penghuni) && $penghuni->kamar ? 'Kamar ' . trim(str_ireplace('kamar', '', $penghuni->kamar->nomor_kamar)) : 'Penghuni' }}
+                                </span>
+                            </div>
+                            <svg class="w-4 h-4 text-slate-400 hidden sm:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="profilDropdown" class="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200/80 overflow-hidden hidden opacity-0 transition-all duration-200 transform origin-top-right scale-95 z-50">
+                            <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+                                <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Penghuni Kos</p>
+                                <p class="text-sm font-bold text-slate-900 truncate">{{ Auth::user()->name }}</p>
+                                <p class="text-xs text-slate-500 truncate mt-0.5">&#64;{{ Auth::user()->username ?? 'user_kos' }}</p>
+                            </div>
+                            
+                            <div class="p-2">
+                                <a href="{{ route('user.profile') }}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-colors">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                    </svg>
+                                    <span>Pengaturan Profil</span>
+                                </a>
+                            </div>
+                            
+                            <div class="p-2 border-t border-slate-100">
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
+                                        <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                                        </svg>
+                                        <span>Keluar (Logout)</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth relative">
-                <div class="w-full max-w-5xl mx-auto pb-20">
+            <!-- Scrollable Content Area -->
+            <!-- DITAMBAHKAN OVERFLOW-Y-SCROLL BIAR ANTI LOMPAT -->
+            <div class="flex-1 overflow-y-scroll p-6 sm:p-8 space-y-6">
+                
+                @if(session('success'))
+                <div id="alertSuccess" class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm font-semibold flex items-center justify-between gap-3 shadow-xs">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 text-sm font-bold shadow-xs">✓</span>
+                        <p>{{ session('success') }}</p>
+                    </div>
+                    <button type="button" onclick="document.getElementById('alertSuccess').remove()" class="text-emerald-500 hover:text-emerald-800 p-1.5 rounded-lg hover:bg-emerald-100/60 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                @endif
 
-                    <!-- ALERT SUCCESS (COMIC STYLE) -->
-                    @if(session('success'))
-                    <div class="mb-8 p-4 bg-green-400 border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] flex items-start gap-4 animate-pop transform rotate-1">
-                        <div class="w-10 h-10 rounded-full bg-white border-2 border-black flex items-center justify-center text-black shrink-0 font-komik text-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
-                            OK!
-                        </div>
-                        <div>
-                            <h4 class="text-xl font-komik text-black tracking-wide">BERHASIL BRO!</h4>
-                            <p class="text-base font-bold text-black mt-1">{{ session('success') }}</p>
+                @if($errors->any())
+                <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-sm font-semibold shadow-xs">
+                    <div class="flex items-start gap-3">
+                        <span class="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 text-sm font-bold shadow-xs">!</span>
+                        <div class="flex-1">
+                            <p class="font-bold">Ada beberapa kendala unggah file:</p>
+                            <ul class="mt-1 list-disc list-inside text-xs font-medium text-rose-700 space-y-0.5">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
                         </div>
                     </div>
-                    @endif
+                </div>
+                @endif
 
-                    <!-- TABEL RIWAYAT TAGIHAN (COMIC STYLE) -->
-                    <div class="bg-white rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden animate-pop comic-card relative">
-                        
-                        <!-- Ornamen Bintang -->
-                        <div class="absolute -top-4 -right-4 bg-cyan-400 border-4 border-black w-14 h-14 rounded-full flex items-center justify-center transform rotate-12 shadow-[4px_4px_0_0_rgba(0,0,0,1)] z-10">
-                            <span class="font-komik text-black text-xl">$$$</span>
+                <!-- HEADER BANNER & PETUNJUK TRANSFER -->
+                <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider mb-2">
+                            <span>Pusat Pembayaran Sewa</span>
                         </div>
+                        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Tagihan & Riwayat Pembayaran</h1>
+                        <p class="text-sm text-slate-500 mt-1 max-w-xl leading-relaxed">
+                            Cek rincian invoice sewa kos bulanan Anda, kirimkan foto struk transfer untuk verifikasi, dan pantau status pelunasan.
+                        </p>
+                    </div>
 
-                        <div class="p-6 border-b-4 border-black bg-yellow-300 flex justify-between items-center relative overflow-hidden">
-                            <!-- Pola Dot Background -->
-                            <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#000 2px, transparent 2px); background-size: 16px 16px;"></div>
-                            <h3 class="text-3xl font-komik text-black tracking-widest drop-shadow-[2px_2px_0_#fff] relative z-10">RIWAYAT PEMBAYARAN</h3>
+                    <!-- Rekening Pembayaran Quick Box -->
+                    <div class="flex flex-wrap items-center gap-3 shrink-0">
+                        <!-- BCA Box -->
+                        <div class="px-4 py-3 bg-slate-50 rounded-2xl border border-slate-200/70 flex items-center gap-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bank BCA</span>
+                                <span class="font-mono text-xs font-extrabold text-slate-900 select-all">1234 5678 90</span>
+                            </div>
+                            <button type="button" onclick="copyText('1234567890', this)" class="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200 shadow-2xs transition-all">
+                                Salin
+                            </button>
                         </div>
-                        
-                        <div class="overflow-x-auto bg-white">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-slate-100 border-b-4 border-black">
-                                        <th class="py-5 px-6 text-lg font-bold text-black uppercase tracking-wider border-r-4 border-black">Bulan / Tahun</th>
-                                        <th class="py-5 px-6 text-lg font-bold text-black uppercase tracking-wider border-r-4 border-black">Total Tagihan</th>
-                                        <th class="py-5 px-6 text-lg font-bold text-black uppercase tracking-wider border-r-4 border-black">Status</th>
-                                        <th class="py-5 px-6 text-lg font-bold text-black uppercase tracking-wider text-right">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y-4 divide-black">
-                                    @forelse($tagihans as $tagihan)
-                                    <tr class="hover:bg-cyan-50 transition-colors group">
-                                        
-                                        <!-- KOLOM BULAN -->
-                                        <td class="py-5 px-6 font-bold text-black text-lg border-r-4 border-black">
-                                            {{ $tagihan->bulan_tagihan }}
-                                        </td>
-                                        
-                                        <!-- KOLOM HARGA -->
-                                        <td class="py-5 px-6 font-komik text-green-600 text-2xl tracking-wider border-r-4 border-black drop-shadow-[1px_1px_0_#000]">
-                                            Rp {{ number_format($tagihan->jumlah_bayar ?? $tagihan->total_tagihan, 0, ',', '.') }}
-                                        </td>
-                                        
-                                        <!-- KOLOM STATUS (BADGES) -->
-                                        <td class="py-5 px-6 border-r-4 border-black">
-                                            @if($tagihan->status == 'Lunas')
-                                                <span class="inline-block px-3 py-1 rounded-lg text-sm font-black bg-green-400 text-black border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform -rotate-2 uppercase">LUNAS ✅</span>
-                                            @elseif($tagihan->status == 'Menunggu Konfirmasi')
-                                                <span class="inline-block px-3 py-1 rounded-lg text-sm font-black bg-yellow-400 text-black border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform rotate-2 uppercase animate-pulse">VERIFIKASI... ⏳</span>
-                                            @elseif($tagihan->status == 'Ditolak')
-                                                <span class="inline-block px-3 py-1 rounded-lg text-sm font-black bg-red-500 text-white border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform -rotate-3 uppercase animate-bounce">DITOLAK ❌</span>
-                                            @else
-                                                <span class="inline-block px-3 py-1 rounded-lg text-sm font-black bg-white text-black border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transform rotate-1 uppercase">BELUM LUNAS 💸</span>
-                                            @endif
-                                        </td>
+                        <!-- Mandiri Box -->
+                        <div class="px-4 py-3 bg-slate-50 rounded-2xl border border-slate-200/70 flex items-center gap-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bank Mandiri</span>
+                                <span class="font-mono text-xs font-extrabold text-slate-900 select-all">1370 0123 4567 8</span>
+                            </div>
+                            <button type="button" onclick="copyText('1370012345678', this)" class="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200 shadow-2xs transition-all">
+                                Salin
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-                                        <!-- KOLOM AKSI -->
-                                        <td class="py-5 px-6 text-right">
-                                            @if($tagihan->status == 'Ditolak')
-                                                <!-- TOMBOL DETAIL TOLAK -->
-                                                <button onclick="openDetailTolakModal({{ $tagihan->id }}, '{{ $tagihan->bulan_tagihan }}', '{{ $tagihan->alasan_tolak }}')" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold uppercase rounded-xl border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none transition-all flex items-center justify-end gap-2 ml-auto transform -rotate-1">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                                    Cek Detail!
-                                                </button>
-                                            @elseif($tagihan->status == 'Belum Lunas')
-                                                <!-- TOMBOL UPLOAD BIASA -->
-                                                <button onclick="openUploadModal({{ $tagihan->id }}, '{{ $tagihan->bulan_tagihan }}')" class="px-4 py-2 bg-cyan-400 hover:bg-cyan-500 text-black text-sm font-bold uppercase rounded-xl border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none transition-all transform rotate-1 inline-block">
-                                                    Kirim Bukti 🚀
-                                                </button>
-                                            @elseif($tagihan->status == 'Menunggu Konfirmasi')
-                                                <span class="text-sm text-slate-500 font-bold italic">Sabar bro...</span>
-                                            @else
-                                                <span class="text-sm text-green-600 font-komik text-xl tracking-widest">BERES!</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    @empty
-                                    <!-- JIKA KOSONG -->
-                                    <tr>
-                                        <td colspan="4" class="py-16 text-center bg-slate-50">
-                                            <div class="flex flex-col items-center justify-center">
-                                                <div class="w-20 h-20 bg-yellow-300 border-4 border-black rounded-full flex items-center justify-center mb-4 shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-6">
-                                                    <svg class="w-10 h-10 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                                </div>
-                                                <h3 class="text-3xl font-komik text-black tracking-widest uppercase">BELUM ADA TAGIHAN!</h3>
-                                                <p class="text-lg font-bold text-slate-600 mt-1">Dompet aman bulan ini! 😎</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
+                <!-- 4 KARTU STATISTIK TAGIHAN (STATIS, KAKU, ANTI ANIMASI) -->
+                @php
+                    $totalSemua = count($tagihans);
+                    $totalLunas = collect($tagihans)->where('status', 'Lunas')->count();
+                    $totalVerif = collect($tagihans)->where('status', 'Menunggu Konfirmasi')->count();
+                    $totalBelum = collect($tagihans)->where('status', 'Belum Lunas')->count();
+                    $totalDitolak = collect($tagihans)->where('status', 'Ditolak')->count();
+                    $nominalPending = collect($tagihans)->whereIn('status', ['Belum Lunas', 'Ditolak'])->sum('jumlah_bayar');
+                @endphp
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    
+                    <!-- 1. Total Tagihan -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Riwayat Tagihan</span>
+                                <!-- Icon Bulat Statis -->
+                                <div class="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-200/60 flex items-center justify-center text-indigo-500 shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex items-baseline gap-2">
+                                <h3 class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ $totalSemua }}</h3>
+                                <span class="text-xs text-slate-400 font-medium">Bulan Tercatat</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                        </div>
+                    </div>
+
+                    <!-- 2. Belum Lunas -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Perlu Dibayar</span>
+                                <!-- Icon Bulat Statis -->
+                                <div class="w-10 h-10 rounded-full bg-rose-50 border border-rose-200/60 flex items-center justify-center text-rose-500 shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex items-baseline gap-2">
+                                <h3 class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ $totalBelum + $totalDitolak }}</h3>
+                                <span class="text-xs text-slate-400 font-medium">Tagihan Terbuka</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                            <span class="text-slate-500">Nominal:</span>
+                            <span class="font-extrabold text-rose-600">Rp {{ number_format($nominalPending, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Menunggu Konfirmasi -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Sedang Diverifikasi</span>
+                                <!-- Icon Bulat Statis -->
+                                <div class="w-10 h-10 rounded-full bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-500 shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex items-baseline gap-2">
+                                <h3 class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ $totalVerif }}</h3>
+                                <span class="text-xs text-slate-400 font-medium">Struk Terkirim</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                            <span class="text-slate-500">Pemeriksaan:</span>
+                            @if($totalVerif > 0)
+                                <span class="font-bold text-amber-600">Menunggu ACC &rarr;</span>
+                            @else
+                                <span class="font-semibold text-slate-600">Tidak Ada Pending</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- 4. Sudah Lunas -->
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Sudah Lunas</span>
+                                <!-- Icon Bulat Statis -->
+                                <div class="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-200/60 flex items-center justify-center text-emerald-500 shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="flex items-baseline gap-2">
+                                <h3 class="text-3xl font-extrabold text-emerald-600 tracking-tight">{{ $totalLunas }}</h3>
+                                <span class="text-xs text-slate-400 font-medium">Bulan Lunas</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                            <span>Status Rekening:</span>
+                            <span class="font-semibold text-emerald-600">Terdata Sah</span>
                         </div>
                     </div>
 
                 </div>
+
+                <!-- TOOLBAR PENCARIAN & FILTER STATUS -->
+                <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    
+                    <!-- Search Input & Status Pills -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 min-w-0">
+                        <!-- Search Box -->
+                        <div class="relative w-full sm:w-80">
+                            <input type="text" id="userTagihanSearchInput" onkeyup="applyUserTagihanFilter()" placeholder="Cari periode bulan atau catatan..." class="w-full pl-9 pr-8 py-2.5 bg-slate-50 border border-slate-200/90 rounded-2xl text-xs font-medium text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all">
+                            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                            </svg>
+                            <button type="button" id="clearUserSearchBtn" onclick="clearUserSearch()" class="hidden absolute right-3 top-2.5 text-slate-400 hover:text-slate-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+
+                        <!-- Status Filter Pills -->
+                        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                            <button type="button" onclick="setUserStatusFilter('all')" id="btnStatusAll" class="tagihan-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white shadow-xs transition-all shrink-0">
+                                Semua ({{ $totalSemua }})
+                            </button>
+                            <button type="button" onclick="setUserStatusFilter('Belum Lunas')" id="btnStatusBelum" class="tagihan-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80 transition-all shrink-0">
+                                Belum Lunas ({{ $totalBelum }})
+                            </button>
+                            <button type="button" onclick="setUserStatusFilter('Menunggu Konfirmasi')" id="btnStatusVerif" class="tagihan-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 hover:bg-amber-100 transition-all shrink-0 flex items-center gap-1.5">
+                                <span>Verifikasi ({{ $totalVerif }})</span>
+                            </button>
+                            <button type="button" onclick="setUserStatusFilter('Lunas')" id="btnStatusLunas" class="tagihan-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80 transition-all shrink-0">
+                                Lunas ({{ $totalLunas }})
+                            </button>
+                            @if($totalDitolak > 0)
+                            <button type="button" onclick="setUserStatusFilter('Ditolak')" id="btnStatusDitolak" class="tagihan-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/80 transition-all shrink-0">
+                                Ditolak ({{ $totalDitolak }})
+                            </button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- VIEW TABEL (FULL KAKU & ANTI-GEPENG) -->
+                <!-- ========================================== -->
+                <div class="bg-white rounded-3xl border border-slate-200/80 shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[1000px] text-left border-collapse table-fixed">
+                            <thead>
+                                <tr class="border-b border-slate-100 bg-slate-50/75 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    <th class="py-4 px-6 w-[20%]">Bulan / Periode</th>
+                                    <th class="py-4 px-6 w-[20%]">Nominal Sewa</th>
+                                    <th class="py-4 px-6 w-[20%] text-center">Status Pembayaran</th>
+                                    <th class="py-4 px-6 w-[15%] text-center">Bukti Transfer</th>
+                                    <th class="py-4 px-6 w-[25%] text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-xs">
+                                @forelse($tagihans as $tagihan)
+                                <tr class="user-tagihan-table-row hover:bg-slate-50/80 transition-colors"
+                                    data-status="{{ $tagihan->status }}"
+                                    data-search="{{ strtolower($tagihan->bulan_tagihan . ' ' . $tagihan->jumlah_bayar . ' ' . $tagihan->catatan . ' ' . $tagihan->status) }}">
+                                    
+                                    <!-- Periode -->
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center gap-2.5">
+                                            <span class="font-extrabold text-slate-900 block text-sm">{{ $tagihan->bulan_tagihan }}</span>
+                                        </div>
+                                        @if($tagihan->catatan)
+                                            <span class="text-[11px] text-slate-400 italic block mt-0.5">{{ $tagihan->catatan }}</span>
+                                        @endif
+                                    </td>
+                                    
+                                    <!-- Nominal -->
+                                    <td class="py-4 px-6">
+                                        <span class="font-extrabold text-slate-900 block text-sm">
+                                            Rp {{ number_format($tagihan->jumlah_bayar ?? $tagihan->total_tagihan, 0, ',', '.') }}
+                                        </span>
+                                    </td>
+                                    
+                                    <!-- Status (Statis) -->
+                                    <td class="py-4 px-6 text-center">
+                                        @if($tagihan->status == 'Lunas')
+                                            <div class="flex flex-col items-center gap-1">
+                                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-xs font-bold">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                    <span>Lunas</span>
+                                                </span>
+                                                @if($tagihan->tanggal_bayar)
+                                                    <span class="text-[10px] text-slate-400 font-medium">
+                                                        {{ \Carbon\Carbon::parse($tagihan->tanggal_bayar)->format('d M Y') }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @elseif($tagihan->status == 'Menunggu Konfirmasi')
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200/80 text-xs font-bold">
+                                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                                <span>Verifikasi</span>
+                                            </span>
+                                        @elseif($tagihan->status == 'Ditolak')
+                                            <div class="flex flex-col items-center gap-1">
+                                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200/80 text-xs font-bold">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                                    <span>Ditolak</span>
+                                                </span>
+                                                @if($tagihan->alasan_tolak)
+                                                    <span class="text-[10px] text-rose-500 font-medium max-w-[120px] truncate" title="{{ $tagihan->alasan_tolak }}">
+                                                        {{ $tagihan->alasan_tolak }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 border border-slate-200 text-xs font-semibold">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                                <span>Belum Lunas</span>
+                                            </span>
+                                        @endif
+                                    </td>
+                                    
+                                    <!-- Bukti Bayar Preview -->
+                                    <td class="py-4 px-6 text-center">
+                                        @if($tagihan->bukti_bayar)
+                                            <button type="button" onclick="openPreviewBuktiModal('{{ asset('storage/' . $tagihan->bukti_bayar) }}', '{{ $tagihan->bulan_tagihan }}')" class="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-colors">
+                                                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                                <span>Lihat</span>
+                                            </button>
+                                        @else
+                                            <span class="text-[11px] text-slate-400 font-medium">-</span>
+                                        @endif
+                                    </td>
+
+                                    <!-- Aksi -->
+                                    <td class="py-4 px-6 text-right">
+                                        @if($tagihan->status == 'Belum Lunas')
+                                            <button type="button" onclick="openUploadModal({{ $tagihan->id }}, '{{ $tagihan->bulan_tagihan }}', '{{ number_format($tagihan->jumlah_bayar ?? $tagihan->total_tagihan, 0, ',', '.') }}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition-all">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                                                <span>Upload Bukti</span>
+                                            </button>
+                                        @elseif($tagihan->status == 'Ditolak')
+                                            <button type="button" onclick="openDetailTolakModal({{ $tagihan->id }}, '{{ $tagihan->bulan_tagihan }}', '{{ addslashes($tagihan->alasan_tolak ?? '') }}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition-all">
+                                                <span>Upload Ulang</span>
+                                            </button>
+                                        @else
+                                            <span class="text-xs font-semibold text-emerald-600">Proses Selesai</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="5" class="py-12 text-center text-slate-400">
+                                        Belum ada riwayat tagihan.
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- EMPTY SEARCH RESULT MESSAGE -->
+                <div id="noResultsUserTagihan" class="hidden py-16 text-center bg-white rounded-3xl border border-slate-200/80 shadow-md p-8">
+                    <div class="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 mx-auto mb-4">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-900">Tagihan Tidak Ditemukan</h3>
+                    <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Tidak ada riwayat tagihan yang cocok dengan kata kunci pencarian atau filter status yang dipilih.</p>
+                    <button type="button" onclick="clearUserSearch()" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-all">
+                        Reset Filter
+                    </button>
+                </div>
+
             </div>
         </main>
     </div>
 
-    <!-- BACKGROUND GELAP MODAL -->
-    <div id="modalOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-40 hidden transition-opacity opacity-0 duration-300"></div>
-    
     <!-- ========================================== -->
-    <!-- KOTAK MODAL UPLOAD (COMIC STYLE) -->
+    <!-- MODAL OVERLAY GLOBAL -->
     <!-- ========================================== -->
-    <div id="modalUploadBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md hidden">
-        <div class="bg-white rounded-3xl shadow-[12px_12px_0_0_rgba(0,0,0,1)] border-4 border-black overflow-hidden w-full mx-4 sm:mx-0 transition-all transform scale-95 opacity-0" id="modalContent">
+    <div id="modalOverlayGlobal" onclick="closeAllModals()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden transition-opacity opacity-0 duration-300"></div>
+
+    <!-- ========================================== -->
+    <!-- 1. MODAL UPLOAD BUKTI TRANSFER -->
+    <!-- ========================================== -->
+    <div id="modalUploadBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md hidden p-4">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden modal-enter w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
             
-            <div class="flex justify-between items-center p-6 border-b-4 border-black bg-cyan-400 relative">
-                <!-- Pola Striped -->
-                <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: repeating-linear-gradient(45deg, #000 0, #000 2px, transparent 2px, transparent 8px);"></div>
-                <h3 class="text-2xl font-komik text-black tracking-widest relative z-10 flex items-center gap-2 drop-shadow-[1px_1px_0_#fff]">
-                    <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                    UPLOAD BUKTI TRANSFER!
-                </h3>
-                <button onclick="closeUploadModal()" class="text-black hover:bg-white border-2 border-transparent hover:border-black p-1 rounded-xl transition-colors relative z-10">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <div class="flex justify-between items-center pb-5 mb-5 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-extrabold text-slate-900 tracking-tight">Upload Bukti Transfer</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Periode: <span id="labelBulan" class="font-extrabold text-slate-900"></span></p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeUploadModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
             
-            <form id="formUploadBukti" method="POST" enctype="multipart/form-data" class="p-8 bg-slate-50">
+            <form id="formUploadBukti" method="POST" enctype="multipart/form-data" class="space-y-4">
                 @csrf
                 @method('PUT')
                 
-                <div class="mb-6 bg-white p-4 rounded-xl border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform -rotate-1">
-                    <p class="text-sm font-bold text-slate-500 uppercase">Tagihan Bulan:</p>
-                    <p id="labelBulan" class="font-komik text-2xl text-green-600 tracking-wider"></p>
+                <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/60 flex items-center justify-between text-xs">
+                    <span class="text-slate-500 font-medium">Nominal Tagihan:</span>
+                    <span id="labelNominalUpload" class="font-extrabold text-slate-900 text-sm"></span>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-lg font-bold text-black mb-2 uppercase">Pilih File Bukti <span class="text-red-500">*</span></label>
-                    <input type="file" name="bukti_bayar" required accept="image/*" class="w-full comic-input bg-white rounded-xl file:mr-4 file:py-3 file:px-4 file:border-0 file:border-r-4 file:border-black file:text-base file:font-bold file:bg-yellow-300 file:text-black hover:file:bg-yellow-400 cursor-pointer">
-                    <p class="text-[11px] font-bold text-black mt-2 bg-white inline-block px-2 border-2 border-black transform rotate-1">*JPG/PNG. Maks 2MB.</p>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                        Pilih Foto Struk / Tangkapan Layar <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="file" name="bukti_bayar" id="inputBuktiBayar" required accept="image/*" onchange="previewUploadImage(this, 'previewImgUpload')" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-900 file:text-white hover:file:bg-slate-800 cursor-pointer focus:outline-none">
+                    <p class="text-[11px] text-slate-400 mt-1.5">Format file: JPG, JPEG, PNG (Maksimal 2 MB).</p>
                 </div>
 
-                <div class="flex gap-4 mt-8">
-                    <button type="button" onclick="closeUploadModal()" class="w-1/3 px-4 py-3 rounded-xl border-4 border-black bg-white hover:bg-slate-200 text-lg font-bold text-black transition-all shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none">BATAL</button>
-                    
-                    <button type="submit" class="w-2/3 px-4 py-3 rounded-xl bg-green-400 hover:bg-green-500 text-black text-xl font-komik tracking-widest border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none transition-all">KIRIM BUKTI!</button>
+                <!-- Preview Area -->
+                <div id="previewContainerUpload" class="hidden p-2 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+                    <img id="previewImgUpload" src="" alt="Pratinjau Struk" class="w-full h-auto max-h-48 object-contain rounded-xl bg-white mx-auto">
+                </div>
+
+                <div class="flex items-center gap-3 pt-4 border-t border-slate-100 mt-6">
+                    <button type="button" onclick="closeUploadModal()" class="w-1/3 py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-all">
+                        Batal
+                    </button>
+                    <button type="submit" class="w-2/3 py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
+                        <span>Kirim Bukti Transfer</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- ========================================== -->
-    <!-- KOTAK MODAL DETAIL TOLAK (COMIC STYLE) -->
+    <!-- 2. MODAL DETAIL TOLAK & UPLOAD ULANG -->
     <!-- ========================================== -->
-    <div id="modalDetailTolakBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md hidden">
-        <div class="bg-white rounded-3xl shadow-[12px_12px_0_0_rgba(0,0,0,1)] border-4 border-black overflow-hidden w-full mx-4 sm:mx-0 transition-all transform scale-95 opacity-0" id="modalDetailTolakContent">
+    <div id="modalDetailTolakBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md hidden p-4">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden modal-enter w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
             
-            <div class="flex justify-between items-center p-6 border-b-4 border-black bg-red-500 relative">
-                <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(#000 2px, transparent 2px); background-size: 16px 16px;"></div>
-                <h3 class="text-2xl font-komik text-white tracking-widest relative z-10 flex items-center gap-2 drop-shadow-[2px_2px_0_#000]">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    WADUH, DITOLAK!
-                </h3>
-                <button onclick="closeDetailTolakModal()" class="text-white hover:bg-black p-1 rounded-xl transition-colors relative z-10 border-2 border-transparent hover:border-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+            <div class="flex justify-between items-center pb-5 mb-5 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-extrabold text-slate-900 tracking-tight">Bukti Pembayaran Ditolak</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Periode: <span id="labelBulanTolak" class="font-extrabold text-slate-900"></span></p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeDetailTolakModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
             
-            <div class="p-8 bg-slate-50">
-                <!-- Alasan Tolak Komik -->
-                <div class="bg-white p-5 rounded-xl border-4 border-black mb-8 relative overflow-visible shadow-[4px_4px_0_0_rgba(0,0,0,1)] transform rotate-1">
-                    <div class="absolute -top-4 -left-4 w-10 h-10 bg-yellow-400 border-2 border-black rounded-full flex items-center justify-center font-bold text-lg transform -rotate-12">?!</div>
-                    <p class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2 border-b-2 border-black inline-block pb-1">Catatan Admin:</p>
-                    <p id="labelAlasan" class="text-lg font-bold text-red-600 leading-relaxed"></p>
+            <div class="space-y-4">
+                <!-- Alasan Penolakan -->
+                <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-900 space-y-1.5">
+                    <span class="font-bold text-rose-950 uppercase tracking-wider block text-[10px]">Catatan dari Pengelola:</span>
+                    <p id="labelAlasan" class="leading-relaxed font-medium"></p>
                 </div>
 
-                <form id="formUploadUlang" method="POST" enctype="multipart/form-data">
+                <form id="formUploadUlang" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     @method('PUT')
                     
-                    <label class="block text-lg font-bold text-black mb-2 uppercase">Kirim Ulang Bukti <span class="text-red-500">*</span></label>
-                    <input type="file" name="bukti_bayar" required accept="image/*" class="w-full mb-3 comic-input bg-white rounded-xl file:mr-4 file:py-3 file:px-4 file:border-0 file:border-r-4 file:border-black file:text-base file:font-bold file:bg-cyan-300 file:text-black hover:file:bg-cyan-400 cursor-pointer">
-                    <p class="text-[11px] font-bold text-black mt-2 bg-white inline-block px-2 border-2 border-black transform -rotate-1 mb-6">*Pastikan gambarnya jelas bro!</p>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            Kirim Ulang Bukti Transfer Baru <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="file" name="bukti_bayar" required accept="image/*" onchange="previewUploadImage(this, 'previewImgUlang')" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-600 file:text-white hover:file:bg-rose-700 cursor-pointer focus:outline-none">
+                        <p class="text-[11px] text-slate-400 mt-1.5">Pastikan foto struk terlihat jelas dan nominal sesuai.</p>
+                    </div>
 
-                    <button type="submit" class="w-full py-4 bg-yellow-400 hover:bg-yellow-500 text-black text-xl font-komik tracking-widest rounded-xl border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none transition-all">
-                        KIRIM ULANG SEKARANG!
-                    </button>
+                    <!-- Preview Area -->
+                    <div id="previewContainerUlang" class="hidden p-2 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+                        <img id="previewImgUlang" src="" alt="Pratinjau Ulang" class="w-full h-auto max-h-48 object-contain rounded-xl bg-white mx-auto">
+                    </div>
+
+                    <div class="flex items-center gap-3 pt-4 border-t border-slate-100 mt-6">
+                        <button type="button" onclick="closeDetailTolakModal()" class="w-1/3 py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-all">
+                            Batal
+                        </button>
+                        <button type="submit" class="w-2/3 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
+                            <span>Kirim Ulang Bukti</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT FUNGSI BUKA TUTUP MODAL -->
+    <!-- ========================================== -->
+    <!-- 3. MODAL PREVIEW BUKTI TRANSFER -->
+    <!-- ========================================== -->
+    <div id="modalPreviewBuktiBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md hidden p-4">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden modal-enter w-full p-6 sm:p-8 text-center max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-100">
+                <div>
+                    <h3 class="text-base font-extrabold text-slate-900">Struk Pembayaran</h3>
+                    <p class="text-xs text-slate-400 mt-0.5" id="labelPreviewPeriode"></p>
+                </div>
+                <button type="button" onclick="closePreviewBuktiModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+
+            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 mb-5">
+                <img id="imgPreviewModal" src="" alt="Bukti Transfer" class="w-full h-auto max-h-80 object-contain rounded-xl bg-white border border-slate-200 mx-auto">
+            </div>
+
+            <button type="button" onclick="closePreviewBuktiModal()" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-all">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPT JS (MODALS, FILTER, SEARCH, CLIPBOARD) -->
     <script>
-        const overlay = document.getElementById('modalOverlay');
-        const modal = document.getElementById('modalUploadBox');
-        const content = document.getElementById('modalContent');
+        const overlayGlobal = document.getElementById('modalOverlayGlobal');
+        let currentStatusFilter = 'all';
 
-        const modalDetailTolak = document.getElementById('modalDetailTolakBox');
-        const modalDetailTolakContent = document.getElementById('modalDetailTolakContent');
+        // Modal Global Handler
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            const content = modal.querySelector('.modal-enter, .modal-leave-active, div');
 
-        // BUKA MODAL UPLOAD BIASA
-        function openUploadModal(id, bulan) {
-            document.getElementById('formUploadBukti').action = `/user/tagihan/${id}/upload-bukti`;
-            document.getElementById('labelBulan').innerText = bulan;
-            
-            overlay.classList.remove('hidden');
+            overlayGlobal.classList.remove('hidden');
             modal.classList.remove('hidden');
-            
+
             setTimeout(() => {
-                overlay.classList.remove('opacity-0');
-                content.classList.remove('scale-95', 'opacity-0');
-                content.classList.add('scale-100', 'opacity-100');
+                overlayGlobal.classList.remove('opacity-0');
+                if (content) {
+                    content.classList.remove('modal-leave-active', 'modal-leave');
+                    content.classList.add('modal-enter-active');
+                }
             }, 10);
         }
 
-        function closeUploadModal() {
-            overlay.classList.add('opacity-0');
-            content.classList.remove('scale-100', 'opacity-100');
-            content.classList.add('scale-95', 'opacity-0');
-            
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            const content = modal.querySelector('.modal-enter-active, .modal-enter, div');
+
+            overlayGlobal.classList.add('opacity-0');
+            if (content) {
+                content.classList.remove('modal-enter-active');
+                content.classList.add('modal-leave-active');
+            }
+
             setTimeout(() => {
-                overlay.classList.add('hidden');
+                overlayGlobal.classList.add('hidden');
                 modal.classList.add('hidden');
-            }, 300);
+                if (content) {
+                    content.classList.remove('modal-leave-active');
+                    content.classList.add('modal-enter');
+                }
+            }, 200);
         }
 
-        // BUKA MODAL DETAIL TOLAK
+        function closeAllModals() {
+            closeUploadModal();
+            closeDetailTolakModal();
+            closePreviewBuktiModal();
+        }
+
+        // Modal Upload
+        function openUploadModal(id, bulan, nominal) {
+            document.getElementById('formUploadBukti').action = "{{ url('user/tagihan') }}/" + id + "/upload-bukti";
+            document.getElementById('labelBulan').innerText = bulan;
+            document.getElementById('labelNominalUpload').innerText = 'Rp ' + nominal;
+
+            // Reset preview
+            const previewCont = document.getElementById('previewContainerUpload');
+            if (previewCont) previewCont.classList.add('hidden');
+            document.getElementById('inputBuktiBayar').value = '';
+
+            openModal('modalUploadBox');
+        }
+
+        function closeUploadModal() { closeModal('modalUploadBox'); }
+
+        // Modal Detail Tolak
         function openDetailTolakModal(id, bulan, alasan) {
-            document.getElementById('formUploadUlang').action = `/user/tagihan/${id}/upload-bukti`;
-            document.getElementById('labelAlasan').innerText = alasan;
-            
-            overlay.classList.remove('hidden');
-            modalDetailTolak.classList.remove('hidden');
-            setTimeout(() => {
-                overlay.classList.remove('opacity-0');
-                modalDetailTolakContent.classList.remove('scale-95', 'opacity-0');
-                modalDetailTolakContent.classList.add('scale-100', 'opacity-100');
-            }, 10);
+            document.getElementById('formUploadUlang').action = "{{ url('user/tagihan') }}/" + id + "/upload-bukti";
+            document.getElementById('labelBulanTolak').innerText = bulan;
+            document.getElementById('labelAlasan').innerText = alasan || 'Bukti transfer tidak jelas atau nominal belum sesuai.';
+
+            const previewCont = document.getElementById('previewContainerUlang');
+            if (previewCont) previewCont.classList.add('hidden');
+
+            openModal('modalDetailTolakBox');
         }
 
-        function closeDetailTolakModal() {
-            overlay.classList.add('opacity-0');
-            modalDetailTolakContent.classList.remove('scale-100', 'opacity-100');
-            modalDetailTolakContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-                modalDetailTolak.classList.add('hidden');
-            }, 300);
+        function closeDetailTolakModal() { closeModal('modalDetailTolakBox'); }
+
+        // Modal Preview Bukti
+        function openPreviewBuktiModal(imgUrl, bulan) {
+            document.getElementById('imgPreviewModal').src = imgUrl;
+            document.getElementById('labelPreviewPeriode').innerText = 'Periode ' + bulan;
+            openModal('modalPreviewBuktiBox');
+        }
+
+        function closePreviewBuktiModal() { closeModal('modalPreviewBuktiBox'); }
+
+        // Live Image Preview Helper
+        function previewUploadImage(input, targetImgId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById(targetImgId);
+                    img.src = e.target.result;
+                    img.parentElement.classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Status Filter
+        function setUserStatusFilter(status) {
+            currentStatusFilter = status;
+
+            const btnAll = document.getElementById('btnStatusAll');
+            const btnVerif = document.getElementById('btnStatusVerif');
+            const btnBelum = document.getElementById('btnStatusBelum');
+            const btnLunas = document.getElementById('btnStatusLunas');
+            const btnDitolak = document.getElementById('btnStatusDitolak');
+
+            const activeClass = 'tagihan-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white shadow-xs transition-all shrink-0';
+            const inactiveClass = 'tagihan-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80 transition-all shrink-0';
+
+            if (btnAll) btnAll.className = (status === 'all') ? activeClass : inactiveClass;
+            if (btnVerif) btnVerif.className = (status === 'Menunggu Konfirmasi') ? activeClass : 'tagihan-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 hover:bg-amber-100 transition-all shrink-0 flex items-center gap-1.5';
+            if (btnBelum) btnBelum.className = (status === 'Belum Lunas') ? activeClass : inactiveClass;
+            if (btnLunas) btnLunas.className = (status === 'Lunas') ? activeClass : inactiveClass;
+            if (btnDitolak) btnDitolak.className = (status === 'Ditolak') ? activeClass : 'tagihan-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/80 transition-all shrink-0';
+
+            applyUserTagihanFilter();
+        }
+
+        function clearUserSearch() {
+            const input = document.getElementById('userTagihanSearchInput');
+            if (input) input.value = '';
+            setUserStatusFilter('all');
+        }
+
+        // Live Filter & Search Engine (Hanya Table Rows)
+        function applyUserTagihanFilter() {
+            const query = (document.getElementById('userTagihanSearchInput')?.value || '').trim().toLowerCase();
+            const clearBtn = document.getElementById('clearUserSearchBtn');
+
+            if (query.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+
+            const rows = document.querySelectorAll('.user-tagihan-table-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const searchStr = row.getAttribute('data-search') || '';
+                const status = row.getAttribute('data-status') || '';
+
+                const matchQuery = query === '' || searchStr.includes(query);
+                const matchStatus = (currentStatusFilter === 'all') || (status === currentStatusFilter);
+
+                if (matchQuery && matchStatus) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const noResults = document.getElementById('noResultsUserTagihan');
+            if (visibleCount === 0 && rows.length > 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+        }
+
+        // Copy Text Helper
+        function copyText(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                const prev = btn.innerText;
+                btn.innerText = 'Tersalin!';
+                btn.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
+                setTimeout(() => {
+                    btn.innerText = prev;
+                    btn.classList.remove('bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
+                }, 2000);
+            });
+        }
+
+        // Auto Dismiss Alert
+        document.addEventListener("DOMContentLoaded", () => {
+            const alertSuccess = document.getElementById('alertSuccess');
+            if (alertSuccess) {
+                setTimeout(() => {
+                    alertSuccess.style.opacity = '0';
+                    alertSuccess.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => alertSuccess.remove(), 500);
+                }, 5000);
+            }
+        });
+
+        // Escape Key & Dropdown Handlers
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAllModals();
+                const dropdown = document.getElementById('profilDropdown');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    toggleDropdown();
+                }
+            }
+        });
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('profilDropdown');
+            if (!dropdown) return;
+
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                setTimeout(() => {
+                    dropdown.classList.remove('opacity-0', 'scale-95');
+                    dropdown.classList.add('opacity-100', 'scale-100');
+                }, 10);
+            } else {
+                dropdown.classList.remove('opacity-100', 'scale-100');
+                dropdown.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => { dropdown.classList.add('hidden'); }, 200); 
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            const button = document.getElementById('profilButton');
+            const dropdown = document.getElementById('profilDropdown');
+            if (button && dropdown && !button.contains(e.target) && !dropdown.contains(e.target)) {
+                if (!dropdown.classList.contains('hidden')) {
+                    dropdown.classList.remove('opacity-100', 'scale-100');
+                    dropdown.classList.add('opacity-0', 'scale-95');
+                    setTimeout(() => { dropdown.classList.add('hidden'); }, 200);
+                }
+            }
+        });
+
+        // Mobile Sidebar Drawer
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (!sidebar || !backdrop) return;
+
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+            }
         }
     </script>
 </body>

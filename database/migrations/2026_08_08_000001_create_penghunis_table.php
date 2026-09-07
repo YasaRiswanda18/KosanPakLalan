@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('penghunis', function (Blueprint $table) {
             $table->id();
             // Sambungkan ke tabel kamar (Kamar ID)
-            $table->foreignId('kamar_id')->nullable()->constrained('kamars')->onDelete('set null');
             
             $table->string('nama');
             $table->string('nomor_hp');

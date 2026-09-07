@@ -18,8 +18,8 @@ class DatabaseSeeder extends Seeder
         // 1. Bikin Akun Khusus Admin (Pak Lalan)
         User::create([
             'name' => 'Pak Lalan',
-            'username' => 'admin_lalan',
-            'password' => Hash::make('password123'),
+            'username' => 'admin',
+            'password' => Hash::make('admin123'),
             'role' => 'admin',
         ]);
 

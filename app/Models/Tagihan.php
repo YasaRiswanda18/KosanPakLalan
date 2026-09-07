@@ -11,9 +11,9 @@ class Tagihan extends Model
 
     protected $guarded = []; // Izinkan semua kolom diisi massal
 
-    // Relasi balik ke tabel Penghuni
+    // Relasi balik ke tabel Penghuni (Tagihan ini atas nama siapa?)
     public function penghuni()
     {
-        return $this->belongsTo(Penghuni::class);
+        return $this->belongsTo(Penghuni::class, 'penghuni_id');
     }
 }

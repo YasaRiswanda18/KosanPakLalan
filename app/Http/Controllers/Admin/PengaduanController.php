@@ -12,7 +12,7 @@ class PengaduanController extends Controller
     public function index()
     {
         // Ambil data pengaduan, sekalian bawa data penghuni dan kamarnya
-        $pengaduans = Pengaduan::with(['penghuni.kamar'])->latest()->get();
+        $pengaduans = Pengaduan::with(['penghuni.kamars'])->latest()->get();
         
         return view('admin.pengaduan.index', compact('pengaduans'));
     }

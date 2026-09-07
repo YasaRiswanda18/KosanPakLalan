@@ -30,4 +30,11 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function pengumumans()
+    {
+        return $this->belongsToMany(Pengumuman::class, 'pengumuman_user')
+                    ->withPivot('read_at')
+                    ->withTimestamps();
+    }
 }

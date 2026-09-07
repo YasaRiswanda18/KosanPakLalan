@@ -1,290 +1,740 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Kelola Akun - Kosan Pak Lalan</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    <!-- FONT KOMIK DARI GOOGLE -->
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* Pengaturan Font Dasar */
-        body { font-family: 'Comic Neue', cursive; font-weight: 700; }
-        .font-komik { font-family: 'Bangers', cursive; letter-spacing: 2px; }
-        
-        /* Background Titik-Titik Ala Kertas Komik (Halftone) */
-        .bg-halftone {
-            background-color: #f8fafc;
-            background-image: radial-gradient(#94a3b8 2px, transparent 2px);
-            background-size: 24px 24px;
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FAFAFA;
+            color: #0F172A;
         }
 
-        /* Animasi Pop-up Komik */
-        .animate-pop { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.8); }
-        @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .modal-enter {
+            animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
         
-        /* Efek Hover Kartu Komik */
-        .comic-card { transition: all 0.2s ease-in-out; }
-        .comic-card:hover { transform: translate(-4px, -4px); box-shadow: 12px 12px 0px 0px rgba(0,0,0,1); }
-        .comic-button:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0px 0px rgba(0,0,0,1); }
+        .modal-exit {
+            animation: modalOut 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
 
-        /* Modal Animasi Komik */
-        .modal-enter { opacity: 0; transform: scale(0.9) rotate(-2deg); }
-        .modal-enter-active { opacity: 1; transform: scale(1) rotate(0); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .modal-leave { opacity: 1; transform: scale(1); }
-        .modal-leave-active { opacity: 0; transform: scale(0.9) rotate(2deg); transition: all 0.2s ease-in; }
+        @keyframes modalIn {
+            0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
 
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #fff; border-left: 2px solid #000; }
-        ::-webkit-scrollbar-thumb { background: #000; border-radius: 0px; }
+        @keyframes modalOut {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(0.95) translateY(10px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .delay-1 { animation-delay: 0.05s; }
+        .delay-2 { animation-delay: 0.1s; }
+        .delay-3 { animation-delay: 0.15s; }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
     </style>
 </head>
+<body class="antialiased min-h-screen flex text-slate-800 bg-[#FAFAFA] selection:bg-slate-900 selection:text-white">
 
-<body class="bg-halftone text-black antialiased overflow-hidden selection:bg-yellow-300 selection:text-black">
-    <div class="flex h-screen w-full">
+    <div class="flex h-screen w-full overflow-hidden">
         
-        <!-- SIDEBAR ADMIN -->
-        <aside class="w-64 bg-white flex flex-col transition-all duration-300 z-30 hidden md:flex border-r-4 border-black shadow-[8px_0_0_0_rgba(0,0,0,1)]">
-            <div class="h-20 flex items-center justify-center px-6 border-b-4 border-black bg-red-500 relative overflow-hidden">
-                <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: repeating-linear-gradient(45deg, #000 0, #000 2px, transparent 2px, transparent 8px);"></div>
-                <div class="text-center transform rotate-2 hover:rotate-0 transition-transform cursor-pointer relative z-10">
-                    <h1 class="font-komik text-3xl text-white drop-shadow-[2px_2px_0_#000]">KOSAN LALAN</h1>
-                    <span class="bg-yellow-300 text-black text-[10px] px-2 py-1 font-bold uppercase tracking-widest border-2 border-black rounded-full">Markas Admin</span>
+       <!-- ========================================== -->
+        <!-- SIDEBAR ADMIN (MODERN MINIMALIST) -->
+        <!-- ========================================== -->
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-72 bg-white border-r border-slate-200/80 flex flex-col justify-between h-full z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-xl lg:shadow-none">
+            
+            <div class="flex flex-col flex-1 min-h-0">
+                <!-- Brand Header -->
+                <div class="h-20 flex items-center justify-between px-6 border-b border-slate-100">
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 group">
+                        <div class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-base shadow-sm group-hover:bg-slate-800 transition-colors shrink-0">
+                            KL
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-base text-slate-900 tracking-tight leading-none group-hover:text-slate-700 transition-colors">KOSAN LALAN</span>
+                            <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Portal Admin</span>
+                        </div>
+                    </a>
+
+                    <!-- Close Button for Mobile -->
+                    <button type="button" onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
+
+                <!-- Navigasi Menu -->
+                <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+                    
+                    <!-- RUMUS NOTIFIKASI ADMIN -->
+                    @php
+                        $notifTagihanAdmin = \App\Models\Tagihan::where('status', 'Menunggu Konfirmasi')->count();
+                        $notifKeluhanAdmin = \App\Models\Pengaduan::where('status', 'Pending')->count();
+                    @endphp
+
+                    <div class="px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        Menu Utama
+                    </div>
+
+                    <!-- Dashboard (Aktif) -->
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.dashboard') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+                    
+                    <!-- Manajemen Kamar -->
+                    <a href="{{ route('admin.kamar.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.kamar.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.kamar.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 21v-4.875A2.625 2.625 0 0110.875 13.5h2.25a2.625 2.625 0 012.625 2.625V21M3 21h18M4.5 3h15a1.5 1.5 0 011.5 1.5v16.5H3V4.5A1.5 1.5 0 014.5 3z" />
+                        </svg>
+                        <span>Manajemen Kamar</span>
+                    </a>
+                    
+                    <!-- Data Penghuni -->
+                    <a href="{{ route('admin.penghuni.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.penghuni.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.penghuni.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                        </svg>
+                        <span>Data Penghuni</span>
+                    </a>
+                    
+                    <!-- Tagihan & Kas (DENGAN NOTIFIKASI) -->
+                    <a href="{{ route('admin.tagihan.index') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.tagihan.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.tagihan.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6H2.25m0 0v11.25a2.25 2.25 0 002.25 2.25h15m0-15.75H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25zM15.75 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>Tagihan & Kas</span>
+                        </div>
+                        @if($notifTagihanAdmin > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full animate-pulse shadow-xs">
+                                {{ $notifTagihanAdmin }}
+                            </span>
+                        @endif
+                    </a>
+
+                    <!-- Laporan Keluhan (DENGAN NOTIFIKASI) -->
+                    <a href="{{ route('admin.pengaduan.index') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.pengaduan.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.pengaduan.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                            </svg>
+                            <span>Laporan Keluhan</span>
+                        </div>
+                        @if($notifKeluhanAdmin > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full animate-pulse shadow-xs">
+                                {{ $notifKeluhanAdmin }}
+                            </span>
+                        @endif
+                    </a>
+
+                    <div class="pt-4 px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        Sistem
+                    </div>
+
+                    <!-- Kelola Akun -->
+                    <a href="{{ route('admin.akun.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.akun.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.akun.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                        <span>Kelola Akun</span>
+                    </a>
+
+                    <!-- Kelola Pengumuman -->
+                    <a href="{{ route('admin.pengumuman.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.pengumuman.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
+                        <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.pengumuman.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                        </svg>
+                        <span>Kelola Pengumuman</span>
+                    </a>
+                </nav>
             </div>
-
-            <nav class="flex-1 px-4 py-6 space-y-3 overflow-y-auto bg-white">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span class="text-lg font-bold">Dashboard</span>
-                </a>
-                
-                <a href="{{ route('admin.kamar.index') }}" class="flex items-center px-4 py-3 bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                    <span class="text-lg font-bold">Manajemen Kamar</span>
-                </a>
-                
-                <a href="{{ route('admin.penghuni.index') }}" class="flex items-center px-4 py-3 bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    <span class="text-lg font-bold">Data Penghuni</span>
-                </a>
-                
-                <a href="{{ route('admin.tagihan.index') }}" class="flex items-center px-4 py-3 bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    <span class="text-lg font-bold">Tagihan & Kas</span>
-                </a>
-
-                <a href="{{ route('admin.pengaduan.index') }}" class="flex items-center px-4 py-3 bg-white border-transparent hover:bg-yellow-200 hover:border-black hover:translate-x-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-                    <span class="text-lg font-bold">Laporan Keluhan</span>
-                </a>
-
-                <!-- MENU AKTIF -->
-                <a href="{{ route('admin.akun.index') }}" class="flex items-center px-4 py-3 bg-cyan-400 border-black translate-x-1 shadow-[4px_4px_0_0_rgba(0,0,0,1)] border-2 rounded-xl transition-all group text-black">
-                    <svg class="w-6 h-6 mr-3 group-hover:scale-125 transition-transform origin-bottom-left" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>
-                    <span class="text-lg font-bold">Kelola Akun</span>
-                </a>
-            </nav>
         </aside>
 
-        <!-- KONTEN UTAMA -->
-        <main class="flex-1 flex flex-col h-screen relative z-10 overflow-hidden">
-            
-            <header class="h-20 bg-white border-b-4 border-black flex items-center justify-between px-8 z-30 shadow-[0_4px_0_0_rgba(0,0,0,1)] relative">
-                <h2 class="text-2xl font-komik text-black tracking-widest drop-shadow-[1px_1px_0_#fff] mt-1">KELOLA AKUN LOGIN 🔐</h2>
-                
-                <div class="relative">
-                    <button type="button" onclick="toggleDropdown()" id="profilButton" class="flex items-center gap-3 bg-yellow-300 border-2 border-black py-2 px-5 rounded-full shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all focus:outline-none">
-                        @if(Auth::user()->foto_profil)
-                            <img src="{{ asset('storage/profil/' . Auth::user()->foto_profil) }}" alt="Profil" class="w-8 h-8 rounded-full object-cover border-2 border-black shrink-0 bg-white">
-                        @else
-                            <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center border-2 border-black shrink-0">
-                                <span class="text-base font-komik text-black">{{ substr(Auth::user()->name ?? 'P', 0, 1) }}</span>
-                            </div>
-                        @endif
-                        <span class="text-base font-bold text-black uppercase">{{ Auth::user()->name ?? 'Pak Lalan' }}</span>
-                    </button>
+        <!-- Backdrop for mobile drawer -->
+        <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-20 hidden md:hidden transition-opacity"></div>
 
-                    <div id="profilDropdown" class="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-[6px_6px_0_0_rgba(0,0,0,1)] border-4 border-black overflow-hidden hidden opacity-0 transition-all duration-200 transform origin-top-right scale-95 z-50">
-                        <div class="p-4 border-b-4 border-black bg-cyan-200">
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-black mb-0.5">Masuk sebagai</p>
-                            <p class="text-base font-komik text-black truncate tracking-wide">{{ Auth::user()->username ?? 'admin_lalan' }}</p>
+        <!-- ========================================== -->
+        <!-- KONTEN UTAMA -->
+        <!-- ========================================== -->
+        <main class="flex-1 flex flex-col h-screen overflow-hidden">
+            
+            <!-- Topbar (Glass Header) -->
+            <header class="h-20 glass-header border-b border-slate-200/80 flex items-center justify-between px-4 sm:px-8 z-10 shrink-0">
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="toggleSidebar()" class="p-2 rounded-xl text-slate-600 hover:bg-slate-100 md:hidden transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    </button>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-medium text-slate-400">Admin</span>
+                            <span class="text-xs text-slate-300">/</span>
+                            <span class="text-xs font-semibold text-slate-700">Kelola Akun</span>
                         </div>
-                        <div class="py-2 bg-white">
-                            <a href="{{ route('admin.profil.index') }}" class="flex items-center px-4 py-2 text-base font-bold text-black hover:bg-yellow-200 transition-colors group">
-                                <span class="w-2 h-2 rounded-full bg-black mr-2 opacity-0 group-hover:opacity-100 transition-opacity"></span> Pengaturan Profil
-                            </a>
-                        </div>
-                        <div class="border-t-4 border-black bg-red-500">
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="w-full flex items-center justify-center px-4 py-3 text-sm font-komik tracking-widest text-white hover:bg-red-600 transition-colors">
-                                    KABUUR! (LOGOUT)
-                                </button>
-                            </form>
+                        <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">Otentikasi & Akun Login</h2>
+                    </div>
+                </div>
+
+                <!-- Right Header Elements -->
+                <div class="flex items-center gap-3">
+                    <!-- Live Time & Date Badge -->
+                    <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/80 border border-slate-200/60 text-xs font-semibold text-slate-600">
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                        </svg>
+                        <span>{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</span>
+                    </div>
+
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button type="button" onclick="toggleDropdown()" id="profilButton" class="flex items-center gap-2.5 p-1.5 pr-3 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-sm transition-all focus:outline-none">
+                            <div class="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                                @if(Auth::user()->foto_profil)
+                                    <img src="{{ asset('storage/profil/' . Auth::user()->foto_profil) }}" alt="Profil" class="w-full h-full object-cover rounded-xl">
+                                @else
+                                    {{ substr(Auth::user()->name ?? 'P', 0, 1) }}
+                                @endif
+                            </div>
+                            <span class="text-xs font-bold text-slate-800 hidden sm:inline-block truncate max-w-[100px]">{{ Auth::user()->name ?? 'Pak Lalan' }}</span>
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+
+                        <div id="profilDropdown" class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden hidden opacity-0 transition-all duration-200 transform origin-top-right scale-95 z-50">
+                            <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Masuk sebagai</p>
+                                <p class="text-xs font-bold text-slate-800 truncate mt-0.5">{{ Auth::user()->username ?? 'admin_lalan' }}</p>
+                            </div>
+                            <div class="p-1.5">
+                                <a href="{{ route('admin.profil.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                    <span>Pengaturan Profil</span>
+                                </a>
+                            </div>
+                            <div class="p-1.5 border-t border-slate-100">
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors text-left">
+                                        <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                        <span>Keluar (Logout)</span>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth relative pb-20">
-                <div class="w-full max-w-5xl mx-auto">
+            <!-- Scrollable Content Area -->
+            <div class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6">
+                <div class="max-w-7xl mx-auto space-y-6">
 
-                    <!-- ALERT SUCCESS -->
+                    <!-- FLASH ALERT SUCCESS -->
                     @if(session('success'))
-                    <div class="mb-8 p-4 bg-green-400 border-4 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] flex items-start gap-4 animate-pop transform -rotate-1">
-                        <div class="w-10 h-10 rounded-full bg-white border-2 border-black flex items-center justify-center text-black font-komik text-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)]">OK!</div>
-                        <div>
-                            <h4 class="text-xl font-komik text-black tracking-wide">MANTAP BRO!</h4>
-                            <p class="text-base font-bold text-black mt-1">{{ session('success') }}</p>
+                    <div id="flash-banner" class="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-4 flex items-center justify-between shadow-xs animate-fade-in">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-emerald-900">Aksi Berhasil!</h4>
+                                <p class="text-xs text-emerald-700 mt-0.5">{{ session('success') }}</p>
+                            </div>
                         </div>
+                        <button type="button" onclick="document.getElementById('flash-banner').remove()" class="text-emerald-500 hover:text-emerald-800 p-1.5 rounded-lg hover:bg-emerald-100 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
                     </div>
                     @endif
 
-                    <div class="bg-white border-4 border-black p-6 rounded-3xl shadow-[8px_8px_0_0_rgba(0,0,0,1)] mb-8 animate-pop comic-card">
-                        <h3 class="text-3xl font-komik text-black tracking-widest uppercase">DAFTAR AKUN LOGIN</h3>
-                        <p class="text-base font-bold text-slate-700 mt-1">Kelola akses sistem. Reset sandi kalau penghuni lupa password.</p>
+                    @if(session('error'))
+                    <div id="flash-error" class="bg-rose-50 border border-rose-200/80 rounded-2xl p-4 flex items-center justify-between shadow-xs animate-fade-in">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-rose-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-rose-900">Peringatan Sistem</h4>
+                                <p class="text-xs text-rose-700 mt-0.5">{{ session('error') }}</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="document.getElementById('flash-error').remove()" class="text-rose-500 hover:text-rose-800 p-1.5 rounded-lg hover:bg-rose-100 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+                    @endif
+
+                    <!-- ========================================== -->
+                    <!-- 3 STATISTIC CARDS (MINIMALIST SAAS) -->
+                    <!-- ========================================== -->
+                    @php
+                        $totalUsers = $users->count();
+                        $penghuniUsers = $users->where('id', '!=', 1)->count();
+                    @endphp
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
+                        
+                        <!-- 1. Total Akun Terdaftar -->
+                        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all duration-300 flex flex-col justify-between animate-fade-in delay-1 group">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-9 h-9 rounded-2xl bg-slate-900 text-white flex items-center justify-center group-hover:scale-105 transition-transform">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                                        </svg>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Akun</span>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-[11px] font-bold text-slate-600">Database</span>
+                            </div>
+                            <div class="space-y-1">
+                                <h3 class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ $totalUsers }}</h3>
+                                <p class="text-xs text-slate-500 font-medium">Pengguna terdaftar di aplikasi</p>
+                            </div>
+                        </div>
+
+                        <!-- 2. Akun Penghuni Aktif -->
+                        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs hover:shadow-sm transition-all duration-300 flex flex-col justify-between animate-fade-in delay-2 group">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-9 h-9 rounded-2xl bg-emerald-500 text-white flex items-center justify-center group-hover:scale-105 transition-transform">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                        </svg>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Akun Penghuni</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200/60 text-[11px] font-bold text-emerald-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    <span>Portal User</span>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <h3 class="text-3xl font-extrabold text-emerald-600 tracking-tight">{{ $penghuniUsers }}</h3>
+                                <p class="text-xs text-slate-500 font-medium">Akun akses penghuni kos</p>
+                            </div>
+                        </div>
+
+                        <!-- 3. Default Password Info Card -->
+                        <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 border border-slate-700/60 shadow-xs hover:shadow-sm transition-all duration-300 flex flex-col justify-between animate-fade-in delay-3 text-white">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                                    </svg>
+                                    <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Sandi Default Reset</span>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-md bg-slate-800 text-amber-300 border border-slate-700 text-[10px] font-mono font-bold">Standard</span>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <code class="px-3 py-1.5 rounded-xl bg-slate-800 text-amber-300 font-mono text-base font-bold border border-slate-700">kos123</code>
+                                    <span class="text-[11px] text-slate-400">Password instan saat reset</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400 mt-2">Penghuni dapat mengganti sandi mandiri di profil mereka.</p>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <!-- TABEL AKUN -->
-                    <div class="bg-white rounded-3xl border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] overflow-hidden animate-pop delay-100 comic-card">
+                    <!-- ========================================== -->
+                    <!-- TOOLBAR & SEARCH BAR -->
+                    <!-- ========================================== -->
+                    <div class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 animate-fade-in delay-2">
+                        
+                        <!-- Search Box -->
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                            </div>
+                            <input type="text" id="liveSearchInput" onkeyup="filterAkun()" placeholder="Cari akun berdasarkan nama lengkap atau username..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all">
+                        </div>
+
+                        <div class="flex items-center gap-2 text-xs text-slate-500 font-medium px-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span>Manajemen Akses & Hak Sandi Pengguna</span>
+                        </div>
+                    </div>
+
+                    <!-- ========================================== -->
+                    <!-- TABEL AKUN LOGIN (MODERN SAAS) -->
+                    <!-- ========================================== -->
+                    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden animate-fade-in delay-3">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="bg-yellow-300 border-b-4 border-black text-black">
-                                        <th class="py-5 px-6 text-xl font-komik tracking-widest uppercase border-r-4 border-black">NAMA AKUN</th>
-                                        <th class="py-5 px-6 text-xl font-komik tracking-widest uppercase border-r-4 border-black">USERNAME</th>
-                                        <th class="py-5 px-6 text-xl font-komik tracking-widest uppercase border-r-4 border-black">TANGGAL DAFTAR</th>
-                                        <th class="py-5 px-6 text-xl font-komik tracking-widest uppercase text-right">AKSI</th>
+                                    <tr class="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                        <th class="py-4 px-6">Identitas Pengguna</th>
+                                        <th class="py-4 px-6">Username Login</th>
+                                        <th class="py-4 px-6">Hak Akses / Peran</th>
+                                        <th class="py-4 px-6">Tanggal Terdaftar</th>
+                                        <th class="py-4 px-6 text-right">Tindakan</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y-4 divide-black bg-white">
-                                    @foreach($users as $user)
-                                    <tr class="hover:bg-cyan-50 transition-colors group">
-                                        <td class="py-5 px-6 border-r-4 border-black">
-                                            <div class="flex items-center gap-4">
-                                                <div class="w-12 h-12 rounded-full bg-cyan-300 border-2 border-black flex items-center justify-center font-komik text-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
-                                                    {{ substr($user->name, 0, 1) }}
+                                <tbody id="akunTableBody" class="divide-y divide-slate-100">
+                                    @forelse($users as $user)
+                                    <tr class="akun-row hover:bg-slate-50/80 transition-colors group"
+                                        data-search="{{ strtolower(($user->name ?? '') . ' ' . ($user->username ?? '') . ' ' . ($user->id == 1 ? 'admin' : 'penghuni')) }}">
+                                        
+                                        <!-- IDENTITAS PENGGUNA -->
+                                        <td class="py-4 px-6">
+                                            <div class="flex items-center gap-3.5">
+                                                <div class="w-10 h-10 rounded-2xl {{ $user->id == 1 ? 'bg-slate-900 text-white' : 'bg-gradient-to-br from-slate-800 to-slate-700 text-white' }} flex items-center justify-center text-xs font-bold shadow-xs border border-slate-700/50 group-hover:scale-105 transition-transform shrink-0">
+                                                    @if($user->foto_profil)
+                                                        <img src="{{ asset('storage/profil/' . $user->foto_profil) }}" alt="Avatar" class="w-full h-full object-cover rounded-2xl">
+                                                    @else
+                                                        <svg class="w-5 h-5 text-slate-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                                        </svg>
+                                                    @endif
                                                 </div>
-                                                <span class="text-lg font-bold text-black uppercase">{{ $user->name }}</span>
+                                                <div>
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-sm font-bold text-slate-900 block leading-tight group-hover:text-slate-700 transition-colors">
+                                                            {{ $user->name }}
+                                                        </span>
+                                                        @if($user->id == 1)
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-slate-900 text-white text-[9px] font-extrabold uppercase tracking-wide">
+                                                                Admin Utama
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    <span class="text-[11px] text-slate-400 block mt-0.5">
+                                                        ID Akun: #{{ str_pad($user->id, 3, '0', STR_PAD_LEFT) }}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </td>
-                                        <td class="py-5 px-6 border-r-4 border-black">
-                                            <span class="text-base font-bold text-black bg-slate-100 px-3 py-1 border-2 border-black rounded-lg">{{ $user->username }}</span>
+
+                                        <!-- USERNAME LOGIN -->
+                                        <td class="py-4 px-6">
+                                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 text-slate-800 font-mono text-xs font-semibold border border-slate-200/80">
+                                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                                </svg>
+                                                <span>{{ $user->username }}</span>
+                                            </div>
                                         </td>
-                                        <td class="py-5 px-6 border-r-4 border-black">
-                                            <span class="text-base font-bold text-slate-700">{{ $user->created_at->format('d M Y') }}</span>
+
+                                        <!-- HAK AKSES / PERAN -->
+                                        <td class="py-4 px-6">
+                                            @if($user->id == 1 || (isset($user->role) && $user->role == 'admin'))
+                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 text-white text-xs font-bold shadow-xs">
+                                                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                                                    </svg>
+                                                    <span>Super Administrator</span>
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200/80 text-emerald-700 text-xs font-bold">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                    <span>Penghuni Kos</span>
+                                                </span>
+                                            @endif
                                         </td>
-                                        <td class="py-5 px-6 text-right">
-                                            <div class="flex items-center justify-end gap-3">
-                                                <button type="button" onclick="openResetModal({{ $user->id }}, '{{ $user->name }}')" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-bold uppercase rounded-xl border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transition-all">
-                                                    RESET PASSWORD
+
+                                        <!-- TANGGAL DAFTAR -->
+                                        <td class="py-4 px-6">
+                                            <div class="text-xs font-medium text-slate-700">
+                                                {{ $user->created_at->format('d M Y') }}
+                                            </div>
+                                            <div class="text-[11px] text-slate-400 mt-0.5">
+                                                {{ $user->created_at->format('H:i') }} WIB
+                                            </div>
+                                        </td>
+
+                                        <!-- TINDAKAN / AKSI -->
+                                        <td class="py-4 px-6 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                
+                                                <!-- Tombol Reset Password -->
+                                                <button type="button" 
+                                                        onclick="openResetModal({{ $user->id }}, '{{ addslashes($user->name) }}', '{{ addslashes($user->username) }}')" 
+                                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-500 text-amber-800 hover:text-white border border-amber-200/80 text-xs font-semibold transition-all shadow-xs"
+                                                        title="Reset Password ke default kos123">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                                                    </svg>
+                                                    <span>Reset Sandi</span>
                                                 </button>
+
+                                                <!-- Tombol Hapus Akun (Kecuali Super Admin ID 1) -->
                                                 @if($user->id != 1)
-                                                <button type="button" onclick="openDeleteModal({{ $user->id }}, '{{ $user->name }}')" class="w-10 h-10 rounded-xl bg-red-500 text-white hover:bg-red-600 flex items-center justify-center border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transition-all">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                <button type="button" 
+                                                        onclick="openDeleteModal({{ $user->id }}, '{{ addslashes($user->name) }}', '{{ addslashes($user->username) }}')" 
+                                                        class="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200/80 flex items-center justify-center transition-all shadow-xs" 
+                                                        title="Hapus Akun">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                                    </svg>
                                                 </button>
                                                 @endif
+
                                             </div>
                                         </td>
+
                                     </tr>
-                                    @endforeach
+                                    @empty
+                                    <tr>
+                                        <td colspan="5" class="py-12 text-center text-slate-400">
+                                            <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-2 text-slate-400">
+                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+                                            </div>
+                                            <span class="text-xs font-semibold">Belum ada akun pengguna yang terdaftar</span>
+                                        </td>
+                                    </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Empty search state -->
+                        <div id="noSearchRow" class="hidden py-12 text-center text-slate-400">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-2 text-slate-400">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                            </div>
+                            <p class="text-xs font-bold text-slate-700">Tidak ada akun yang sesuai pencarian</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">Periksa kembali ejaan nama atau username.</p>
+                        </div>
                     </div>
+
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- BACKGROUND GELAP OVERLAY (PENTING BIAR MODAL MUNCUL) -->
-    <div id="modalOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 hidden transition-opacity opacity-0 duration-300"></div>
+    <!-- ========================================== -->
+    <!-- MODAL OVERLAY & DIALOGS -->
+    <!-- ========================================== -->
+    <div id="modalOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden transition-opacity"></div>
 
-    <!-- MODAL RESET PASSWORD -->
-    <div id="modalResetBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm hidden">
-        <div class="bg-white rounded-[2rem] shadow-[12px_12px_0_0_rgba(0,0,0,1)] border-4 border-black overflow-hidden modal-enter w-full mx-4 sm:mx-0 text-center p-8 transform rotate-1">
-            <div class="w-20 h-20 bg-yellow-300 text-black border-4 border-black rounded-full flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+    <!-- 1. MODAL RESET PASSWORD -->
+    <div id="modalResetBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md hidden p-4">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden modal-enter w-full p-6 sm:p-8">
+            
+            <div class="flex items-center gap-3.5 mb-5">
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-600 flex items-center justify-center font-bold text-xl shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 tracking-tight">Reset Sandi Akun?</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Password akan dikembalikan ke sandi standar.</p>
+                </div>
             </div>
-            <h3 class="text-3xl font-komik text-black mb-2 tracking-widest">RESET PASSWORD?</h3>
-            <p class="text-base font-bold text-black mb-6">Akun <span id="resetNamaLabel" class="bg-cyan-200 px-2 border-2 border-black inline-block transform rotate-1"></span> bakal balik ke setelan pabrik.</p>
-            <div class="bg-black text-white p-4 rounded-xl mb-8 font-komik text-2xl tracking-widest transform -rotate-1">PASS: kos123</div>
-            <form id="formReset" method="POST" class="flex gap-4">
-                @csrf @method('PUT')
-                <button type="button" onclick="closeModal('modalResetBox')" class="w-1/2 px-4 py-3 rounded-xl border-4 border-black bg-white hover:bg-slate-200 text-lg font-bold text-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transition-all">BATAL</button>
-                <button type="submit" class="w-1/2 px-4 py-3 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-black text-xl font-komik tracking-widest border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transition-all">RESET!</button>
+
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 mb-5 space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-slate-400 font-medium">Nama Akun:</span>
+                    <strong id="resetNamaLabel" class="text-slate-900 font-bold"></strong>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-slate-400 font-medium">Username:</span>
+                    <span id="resetUsernameLabel" class="text-slate-700 font-mono font-semibold"></span>
+                </div>
+            </div>
+
+            <!-- Password Default Banner -->
+            <div class="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-amber-900 text-center mb-6">
+                <span class="text-[11px] font-semibold text-amber-700 block uppercase tracking-wider">Password Baru Default</span>
+                <strong class="text-lg font-mono font-bold tracking-wider text-amber-900 block mt-1">kos123</strong>
+            </div>
+
+            <form id="formReset" method="POST" action="">
+                @csrf
+                @method('PUT')
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="closeModal('modalResetBox')" class="w-1/2 py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-all">
+                        Batal
+                    </button>
+                    <button type="submit" class="w-1/2 py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-white shadow-xs transition-all">
+                        Ya, Reset Sandi
+                    </button>
+                </div>
             </form>
+
         </div>
     </div>
 
-    <!-- MODAL HAPUS AKUN -->
-    <div id="modalDeleteBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm hidden">
-        <div class="bg-white rounded-[2rem] shadow-[12px_12px_0_0_rgba(0,0,0,1)] border-4 border-black overflow-hidden modal-enter w-full mx-4 sm:mx-0 text-center p-8 transform rotate-1">
-            <div class="w-20 h-20 bg-red-500 text-white border-4 border-black rounded-full flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+    <!-- 2. MODAL HAPUS AKUN -->
+    <div id="modalDeleteBox" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md hidden p-4">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden modal-enter w-full p-6 sm:p-8">
+            
+            <div class="flex items-center gap-3.5 mb-5">
+                <div class="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-200/80 text-rose-600 flex items-center justify-center font-bold text-xl shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 tracking-tight">Hapus Akun Pengguna?</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Pengguna tidak dapat login kembali ke sistem.</p>
+                </div>
             </div>
-            <h3 class="text-3xl font-komik text-black mb-2 tracking-widest drop-shadow-[2px_2px_0_#fff]">HAPUS AKUN?!</h3>
-            <p class="text-base font-bold text-black mb-8">Data <span id="deleteNamaLabel" class="bg-red-500 text-white px-2 border-2 border-black inline-block transform rotate-1"></span> bakal lenyap dari database!</p>
-            <form id="formDelete" method="POST" class="flex gap-4">
-                @csrf @method('DELETE')
-                <button type="button" onclick="closeModal('modalDeleteBox')" class="w-1/2 px-4 py-3 rounded-xl border-4 border-black bg-white hover:bg-slate-200 text-lg font-bold text-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transition-all">BATAL</button>
-                <button type="submit" class="w-1/2 px-4 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xl font-komik tracking-widest border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] comic-button transition-all">HANCURKAN! 💣</button>
+
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 mb-6 space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-slate-400 font-medium">Nama:</span>
+                    <strong id="deleteNamaLabel" class="text-slate-900 font-bold"></strong>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-slate-400 font-medium">Username:</span>
+                    <span id="deleteUsernameLabel" class="text-slate-700 font-mono font-semibold"></span>
+                </div>
+            </div>
+
+            <form id="formDelete" method="POST" action="">
+                @csrf
+                @method('DELETE')
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="closeModal('modalDeleteBox')" class="w-1/2 py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-all">
+                        Batal
+                    </button>
+                    <button type="submit" class="w-1/2 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-xs font-semibold text-white shadow-xs transition-all">
+                        Ya, Hapus Akun
+                    </button>
+                </div>
             </form>
+
         </div>
     </div>
 
-    <!-- SCRIPT MODAL LENGKAP & AMAN -->
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT LOGIC & INTERACTIONS -->
+    <!-- ========================================== -->
     <script>
-        const overlay = document.getElementById('modalOverlay');
-
+        // Modal System
         function openModal(modalId) {
+            const overlay = document.getElementById('modalOverlay');
             const modal = document.getElementById(modalId);
-            const content = modal.querySelector('div');
             
             overlay.classList.remove('hidden');
             modal.classList.remove('hidden');
-            
-            setTimeout(() => {
-                overlay.classList.remove('opacity-0');
-                content.classList.remove('modal-enter');
-                content.classList.add('modal-enter-active');
-            }, 10);
+            document.body.style.overflow = 'hidden';
         }
 
         function closeModal(modalId) {
+            const overlay = document.getElementById('modalOverlay');
             const modal = document.getElementById(modalId);
-            const content = modal.querySelector('div');
             
-            overlay.classList.add('opacity-0');
-            content.classList.remove('modal-enter-active');
-            content.classList.add('modal-leave-active');
-            
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-                modal.classList.add('hidden');
-                content.classList.remove('modal-leave-active');
-                content.classList.add('modal-enter');
-            }, 300);
+            modal.classList.add('hidden');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = 'auto';
         }
 
-        function openResetModal(id, nama) {
+        // Close on backdrop click
+        document.getElementById('modalOverlay').addEventListener('click', function() {
+            document.querySelectorAll('[id^="modal"]').forEach(el => {
+                if (el.id !== 'modalOverlay') el.classList.add('hidden');
+            });
+            this.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        });
+
+        // Trigger Reset Modal
+        function openResetModal(id, nama, username) {
             document.getElementById('formReset').action = `/admin/akun/${id}/reset-password`;
             document.getElementById('resetNamaLabel').innerText = nama;
+            document.getElementById('resetUsernameLabel').innerText = '@' + username;
             openModal('modalResetBox');
         }
 
-        function openDeleteModal(id, nama) {
+        // Trigger Delete Modal
+        function openDeleteModal(id, nama, username) {
             document.getElementById('formDelete').action = `/admin/akun/${id}`;
             document.getElementById('deleteNamaLabel').innerText = nama;
+            document.getElementById('deleteUsernameLabel').innerText = '@' + username;
             openModal('modalDeleteBox');
         }
 
-        // Dropdown Profil Admin
+        // Live Search Filter
+        function filterAkun() {
+            const query = document.getElementById('liveSearchInput').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('.akun-row');
+            let matchedCount = 0;
+
+            rows.forEach(row => {
+                const searchData = row.getAttribute('data-search') || '';
+                if (query === '' || searchData.includes(query)) {
+                    row.style.display = '';
+                    matchedCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const noSearchRow = document.getElementById('noSearchRow');
+            if (noSearchRow) {
+                if (matchedCount === 0 && rows.length > 0) {
+                    noSearchRow.classList.remove('hidden');
+                } else {
+                    noSearchRow.classList.add('hidden');
+                }
+            }
+        }
+
+        // Profile Dropdown
         function toggleDropdown() {
             const dropdown = document.getElementById('profilDropdown');
+            if (!dropdown) return;
+            
             if (dropdown.classList.contains('hidden')) {
                 dropdown.classList.remove('hidden');
                 setTimeout(() => {
@@ -294,14 +744,14 @@
             } else {
                 dropdown.classList.remove('opacity-100', 'scale-100');
                 dropdown.classList.add('opacity-0', 'scale-95');
-                setTimeout(() => { dropdown.classList.add('hidden'); }, 200); 
+                setTimeout(() => { dropdown.classList.add('hidden'); }, 200);
             }
         }
 
         window.addEventListener('click', function(e) {
             const button = document.getElementById('profilButton');
             const dropdown = document.getElementById('profilDropdown');
-            if (!button.contains(e.target) && !dropdown.contains(e.target)) {
+            if (button && dropdown && !button.contains(e.target) && !dropdown.contains(e.target)) {
                 if (!dropdown.classList.contains('hidden')) {
                     dropdown.classList.remove('opacity-100', 'scale-100');
                     dropdown.classList.add('opacity-0', 'scale-95');
@@ -309,6 +759,22 @@
                 }
             }
         });
+
+        // Mobile Sidebar Drawer
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (!sidebar || !backdrop) return;
+
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+            }
+        }
     </script>
 </body>
 </html>

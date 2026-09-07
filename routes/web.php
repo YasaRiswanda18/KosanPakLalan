@@ -11,6 +11,8 @@ use App\Http\Controllers\User\PengaduanController as UserPengaduanController;
 use App\Http\Controllers\Admin\PengaduanController as AdminPengaduanController;
 use App\Http\Controllers\Admin\TagihanController as AdminTagihanController;
 use App\Http\Controllers\Admin\AkunController as AdminAkunController;
+use App\Http\Controllers\PengumumanController;
+use App\Http\Controllers\User\PengumumanController as UserPengumumanController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -46,6 +48,7 @@ Route::get('/admin/kamar', [App\Http\Controllers\KamarController::class, 'index'
 // Rute untuk Halaman Manajemen Kamar
 Route::get('/admin/kamar', [App\Http\Controllers\KamarController::class, 'index'])->middleware(['auth'])->name('admin.kamar.index');
 
+Route::put('/admin/kamar/update-tarif', [App\Http\Controllers\KamarController::class, 'updateTarifMassal'])->name('admin.kamar.updateTarifMassal');
 // Rute untuk PROSES Tambah Kamar Baru (BARU)
 Route::post('/admin/kamar', [App\Http\Controllers\KamarController::class, 'store'])->middleware(['auth'])->name('admin.kamar.store');
 // Rute untuk PROSES Update/Edit Kamar
@@ -56,6 +59,9 @@ Route::delete('/admin/kamar/{id}', [App\Http\Controllers\KamarController::class,
 Route::get('/admin/penghuni', [App\Http\Controllers\PenghuniController::class, 'index'])->middleware(['auth'])->name('admin.penghuni.index');
 // Rute untuk PROSES Tambah Penghuni Baru
 Route::post('/admin/penghuni', [App\Http\Controllers\PenghuniController::class, 'store'])->middleware(['auth'])->name('admin.penghuni.store');
+
+
+
 
 // Rute untuk Update (Edit) dan Delete (Hapus) Data Penghuni
 Route::put('/admin/penghuni/{id}', [App\Http\Controllers\PenghuniController::class, 'update'])->middleware(['auth']);
@@ -85,6 +91,7 @@ require __DIR__.'/auth.php';
 Route::prefix('user')->middleware(['auth'])->group(function () {
     
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
+    Route::get('/pengumuman', [UserPengumumanController::class, 'index'])->name('user.pengumuman');
     Route::get('/tagihan', [UserTagihanController::class, 'index'])->name('user.tagihan');
     Route::put('/tagihan/{id}/upload-bukti', [UserTagihanController::class, 'uploadBukti'])->name('user.tagihan.upload');
     
@@ -96,6 +103,7 @@ Route::prefix('user')->middleware(['auth'])->group(function () {
     Route::get('/pengaduan', [UserPengaduanController::class, 'index'])->name('user.pengaduan'); 
     Route::post('/pengaduan', [UserPengaduanController::class, 'store'])->name('user.pengaduan.store');
     
+    Route::delete('/pengaduan/{id}', [UserPengaduanController::class, 'destroy'])->name('user.pengaduan.destroy');
     
 });
 
@@ -105,6 +113,11 @@ Route::prefix('user')->middleware(['auth'])->group(function () {
 // Pastikan kode di bawah ini ada di dalam grup middleware admin !
 Route::prefix('admin')->middleware(['auth'])->group(function () {
 
+   Route::get('/pengumuman', [PengumumanController::class, 'index'])->name('admin.pengumuman.index');
+    Route::post('/pengumuman', [PengumumanController::class, 'store'])->name('admin.pengumuman.store');
+    Route::put('/pengumuman/{id}', [PengumumanController::class, 'update'])->name('admin.pengumuman.update');
+    Route::delete('/pengumuman/{id}', [PengumumanController::class, 'destroy'])->name('admin.pengumuman.destroy');
+    
     // Halaman Keluhan & Pengaduan
     Route::get('/pengaduan', [AdminPengaduanController::class, 'index'])->name('admin.pengaduan.index');
     Route::put('/pengaduan/{id}/status', [AdminPengaduanController::class, 'updateStatus'])->name('admin.pengaduan.updateStatus');
@@ -117,6 +130,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     // Halaman Tagihan & Kas Admin
     Route::get('/tagihan', [AdminTagihanController::class, 'index'])->name('admin.tagihan.index');
     Route::put('/tagihan/{id}/konfirmasi', [AdminTagihanController::class, 'konfirmasi'])->name('admin.tagihan.konfirmasi');
+    Route::get('/tagihan/cetak-struk/{id}', [AdminTagihanController::class, 'cetakStruk'])->name('admin.tagihan.cetak_struk');
 
     // RUTE BARU CETAK LAPORAN 
     Route::get('/tagihan/cetak', [AdminTagihanController::class, 'cetakLaporan'])->name('admin.tagihan.cetak');
@@ -133,6 +147,13 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/profil', [App\Http\Controllers\Admin\ProfilController::class, 'index'])->name('admin.profil.index');
     Route::put('/profil/update', [App\Http\Controllers\Admin\ProfilController::class, 'update'])->name('admin.profil.update');
 
+    // Route untuk Proses Nambah Kamar Extra (Buat Saudara/Teman)
+    Route::post('/penghuni/{id}/tambah-kamar', [App\Http\Controllers\PenghuniController::class, 'tambahKamarSewa'])->name('admin.penghuni.tambahKamar');
+
+    // Route untuk Edit & Lepas Kamar Spesifik (Multi-Kamar)
+    Route::put('/penghuni/kamar/{kamar_id}', [App\Http\Controllers\PenghuniController::class, 'updateKamarSewa'])->name('admin.penghuni.updateKamarSewa');
+    Route::delete('/penghuni/kamar/{kamar_id}', [App\Http\Controllers\PenghuniController::class, 'hapusKamarSewa'])->name('admin.penghuni.hapusKamarSewa');
+
 });
 
 // Halaman Landing Page Publik (Udah Rapi & Gak Balatak)
@@ -140,4 +161,3 @@ Route::get('/', function () {
     // Arahkan ke folder 'publik' dan file 'landingpage'
     return view('publik.landingpage'); 
 })->name('landing');
-
