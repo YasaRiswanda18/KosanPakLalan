@@ -328,8 +328,8 @@
                         <!-- Mandiri Box -->
                         <div class="px-4 py-3 bg-slate-50 rounded-2xl border border-slate-200/70 flex items-center gap-3">
                             <div>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bank Mandiri</span>
-                                <span class="font-mono text-xs font-extrabold text-slate-900 select-all">1370 0123 4567 8</span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bank BCA</span>
+                                <span class="font-mono text-xs font-extrabold text-slate-900 select-all">148 350 5845</span>
                             </div>
                             <button type="button" onclick="copyText('1370012345678', this)" class="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200 shadow-2xs transition-all">
                                 Salin
