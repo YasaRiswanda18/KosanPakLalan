@@ -36,14 +36,8 @@
             animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(8px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .delay-1 { animation-delay: 50ms; }
@@ -53,34 +47,16 @@
 
         /* Smooth Active Status Badge Pulse & Glow */
         @keyframes statusPulse {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35);
-                transform: scale(1);
-            }
-            50% {
-                box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
-                transform: scale(1.02);
-            }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); transform: scale(1); }
+            50% { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); transform: scale(1.02); }
         }
-        .animate-active-badge {
-            animation: statusPulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
+        .animate-active-badge { animation: statusPulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 
         /* Custom Modern Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #F1F5F9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #CBD5E1;
-            border-radius: 9999px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94A3B8;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #F1F5F9; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
     </style>
 </head>
 
@@ -88,9 +64,7 @@
     
     <div class="flex h-screen w-full overflow-hidden">
         
-        <!-- ========================================== -->
         <!-- SIDEBAR BACKDROP (Mobile only) -->
-        <!-- ========================================== -->
         <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity duration-300"></div>
 
         <!-- ========================================== -->
@@ -257,8 +231,9 @@
                             @endif
                             <div class="hidden sm:flex flex-col text-left">
                                 <span class="text-xs font-bold text-slate-900 leading-tight">{{ Auth::user()->name }}</span>
+                                <!-- PERBAIKAN: Header Profile untuk Multi-Kamar -->
                                 <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                                    {{ $penghuni && $penghuni->kamar ? 'Kamar ' . trim(str_ireplace('kamar', '', $penghuni->kamar->nomor_kamar)) : 'Penghuni' }}
+                                    {{ $penghuni && $penghuni->kamars->count() > 0 ? 'Kamar ' . trim(str_ireplace('kamar', '', $penghuni->kamars->first()->nomor_kamar)) : 'Penghuni' }}
                                 </span>
                             </div>
                             <svg class="w-4 h-4 text-slate-400 hidden sm:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -357,11 +332,19 @@
                                     Penghuni Aktif
                                 </span>
                             </div>
+                            
+                            <!-- PERBAIKAN: Hero Card Multi-Kamar Info -->
                             <p class="text-xs text-slate-400 font-medium flex items-center gap-2">
                                 <span>&#64;{{ $user->username }}</span>
                                 <span>&bull;</span>
-                                <span>{{ $penghuni && $penghuni->kamar ? (Str::startsWith(strtolower(trim($penghuni->kamar->nomor_kamar)), 'kamar') ? trim($penghuni->kamar->nomor_kamar) : 'Kamar ' . trim($penghuni->kamar->nomor_kamar)) : 'Unit Kos' }}</span>
-                                @if($penghuni && $penghuni->kamar && $penghuni->kamar->tipe_kamar == 'VIP')
+                                <span>
+                                    @if($penghuni && $penghuni->kamars->count() > 0)
+                                        {{ $penghuni->kamars->pluck('nomor_kamar')->map(function($k) { return Str::startsWith(strtolower(trim($k)), 'kamar') ? trim($k) : 'Kamar ' . trim($k); })->join(', ') }}
+                                    @else
+                                        Unit Kos
+                                    @endif
+                                </span>
+                                @if($penghuni && $penghuni->kamars->count() > 0 && $penghuni->kamars->where('tipe_kamar', 'VIP')->count() > 0)
                                     <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">VIP</span>
                                 @endif
                             </p>
@@ -392,13 +375,25 @@
                                     </svg>
                                 </div>
                             </div>
+                            
+                            <!-- PERBAIKAN: Metric Unit Kamar -->
                             <h3 class="text-2xl font-extrabold text-slate-900 tracking-tight">
-                                {{ $penghuni && $penghuni->kamar ? trim($penghuni->kamar->nomor_kamar) : '-' }}
+                                @if($penghuni && $penghuni->kamars->count() > 0)
+                                    {{ $penghuni->kamars->pluck('nomor_kamar')->join(', ') }}
+                                @else
+                                    -
+                                @endif
                             </h3>
                         </div>
                         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                             <span>Tipe Fasilitas:</span>
-                            <span class="font-semibold text-slate-700">{{ $penghuni && $penghuni->kamar ? $penghuni->kamar->tipe_kamar : 'Standar' }}</span>
+                            <span class="font-semibold text-slate-700">
+                                @if($penghuni && $penghuni->kamars->count() > 0)
+                                    {{ $penghuni->kamars->pluck('tipe_kamar')->unique()->join(', ') }}
+                                @else
+                                    Standar
+                                @endif
+                            </span>
                         </div>
                     </div>
 
@@ -413,8 +408,10 @@
                                     </svg>
                                 </div>
                             </div>
+                            
+                            <!-- PERBAIKAN: Metric Harga Kamar Dijumlahkan -->
                             <h3 class="text-2xl font-extrabold text-emerald-600 tracking-tight">
-                                Rp {{ number_format($penghuni->kamar->harga ?? 0, 0, ',', '.') }}
+                                Rp {{ number_format($penghuni ? $penghuni->kamars->sum('harga') : 0, 0, ',', '.') }}
                             </h3>
                         </div>
                         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
