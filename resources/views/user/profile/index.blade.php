@@ -446,9 +446,11 @@
                                     @endphp
                                     
                                     @if($hari == 0)
-                                        <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">Penghuni Baru (Hari ini)</span>
+                                        <span class="text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-md font-bold">Penghuni Baru</span>
+                                    @elseif($hari <= 7)
+                                        <span class="text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md font-bold">Penghuni Baru ({{ $hari }} Hari)</span>
                                     @elseif($hari >= 30)
-                                        {{ floor($hari / 30) }} Bulan {{ $hari % 30 }} Hari
+                                        {{ floor($hari / 30) }} Bulan {{ $hari % 30 > 0 ? ($hari % 30) . ' Hari' : '' }}
                                     @else
                                         {{ $hari }} Hari
                                     @endif
