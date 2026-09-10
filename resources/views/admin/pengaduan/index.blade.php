@@ -259,12 +259,10 @@
                                 @else
                                     {{ substr(Auth::user()->name ?? 'P', 0, 1) }}
                                 @endif
-                           <div class="hidden sm:flex flex-col text-left">
-                                <span class="text-xs font-bold text-slate-900 leading-tight">{{ Auth::user()->name ?? 'Pak Lalan' }}</span>
-                                <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Administrator</span>
-                            </div>
-                            <svg class="w-4 h-4 text-slate-400 hidden sm:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
-                        </button>
+                            <div class="hidden sm:flex flex-col text-left">
+    <span class="text-xs font-bold text-slate-900 leading-tight">{{ Auth::user()->name ?? 'Pak Lalan' }}</span>
+    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Administrator</span>
+</div>
 
                         <div id="profilDropdown" class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden hidden opacity-0 transition-all duration-200 transform origin-top-right scale-95 z-50">
                             <div class="p-4 border-b border-slate-100 bg-slate-50/50">
