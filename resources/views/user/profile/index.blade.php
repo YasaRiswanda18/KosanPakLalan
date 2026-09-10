@@ -441,13 +441,11 @@
                             <span class="font-semibold text-slate-700">
                                 @if($penghuni && $penghuni->tanggal_masuk)
                                     @php
-                                        // Hitung selisih hari dari tanggal masuk ke hari ini
-                                        $hari = \Carbon\Carbon::parse($penghuni->tanggal_masuk)->startOfDay()->diffInDays(now()->startOfDay());
+                                        // Hitung selisih hari, ditambah 1 agar hari pertama masuk langsung dihitung "1 Hari"
+                                        $hari = \Carbon\Carbon::parse($penghuni->tanggal_masuk)->startOfDay()->diffInDays(now()->startOfDay()) + 1;
                                     @endphp
                                     
-                                    @if($hari == 0)
-                                        <span class="text-emerald-700 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-md font-bold">Penghuni Baru</span>
-                                    @elseif($hari <= 7)
+                                    @if($hari <= 7)
                                         <span class="text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md font-bold">Penghuni Baru ({{ $hari }} Hari)</span>
                                     @elseif($hari >= 30)
                                         {{ floor($hari / 30) }} Bulan {{ $hari % 30 > 0 ? ($hari % 30) . ' Hari' : '' }}
