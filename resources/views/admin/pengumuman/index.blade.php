@@ -101,7 +101,7 @@
                         Menu Utama
                     </div>
 
-                    <!-- Dashboard (Aktif) -->
+                    <!-- Dashboard -->
                     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
                         <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.dashboard') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
@@ -125,7 +125,7 @@
                         <span>Data Penghuni</span>
                     </a>
                     
-                    <!-- Tagihan & Kas (DENGAN NOTIFIKASI) -->
+                    <!-- Tagihan & Kas -->
                     <a href="{{ route('admin.tagihan.index') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.tagihan.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
                         <div class="flex items-center gap-3">
                             <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.tagihan.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -134,13 +134,13 @@
                             <span>Tagihan & Kas</span>
                         </div>
                         @if($notifTagihanAdmin > 0)
-                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full animate-pulse shadow-xs">
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full shadow-xs">
                                 {{ $notifTagihanAdmin }}
                             </span>
                         @endif
                     </a>
 
-                    <!-- Laporan Keluhan (DENGAN NOTIFIKASI) -->
+                    <!-- Laporan Keluhan -->
                     <a href="{{ route('admin.pengaduan.index') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.pengaduan.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
                         <div class="flex items-center gap-3">
                             <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.pengaduan.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -199,7 +199,7 @@
 
                 <div class="flex items-center gap-3 sm:gap-4">
                     <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs font-semibold text-slate-600">
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
                         <span>{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</span>
                     </div>
 
@@ -225,7 +225,16 @@
                                 <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Masuk Sebagai</p>
                                 <p class="text-sm font-bold text-slate-900 truncate">{{ Auth::user()->name ?? 'Administrator' }}</p>
                             </div>
-                            <div class="p-2 border-t border-slate-100">
+                            
+                            <!-- MENU PENGATURAN PROFIL YANG BARU DITAMBAHKAN -->
+                            <div class="p-1.5">
+                                <a href="{{ route('admin.profil.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                    <span>Pengaturan Profil</span>
+                                </a>
+                            </div>
+
+                            <div class="p-1.5 border-t border-slate-100">
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
@@ -550,7 +559,7 @@
         function openModal() { showModal('modalBox'); }
         function closeModal() { hideModal('modalBox'); }
 
-        // PERBAIKAN: Menggunakan helper URL Laravel biar dinamis dan gak 404
+        // Menggunakan helper URL Laravel biar dinamis dan gak 404
         function openEditModal(id, judul, kategori, status) {
             document.getElementById('formEditPengumuman').action = "{{ url('admin/pengumuman') }}/" + id;
             document.getElementById('editJudul').value = judul;
@@ -565,7 +574,7 @@
         }
         function closeEditModal() { hideModal('modalEditBox'); }
 
-        // PERBAIKAN: Menggunakan helper URL Laravel biar dinamis dan gak 404
+        // Menggunakan helper URL Laravel biar dinamis dan gak 404
         function openDeleteModal(id) {
             document.getElementById('formDeletePengumuman').action = "{{ url('admin/pengumuman') }}/" + id;
             showModal('modalDeleteBox');
