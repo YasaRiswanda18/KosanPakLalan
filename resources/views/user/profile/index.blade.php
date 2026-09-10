@@ -435,10 +435,26 @@
                                 {{ $penghuni && $penghuni->tanggal_masuk ? \Carbon\Carbon::parse($penghuni->tanggal_masuk)->format('d M Y') : '-' }}
                             </h3>
                         </div>
+                        
                         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                             <span>Masa Hunian:</span>
                             <span class="font-semibold text-slate-700">
-                                {{ $penghuni && $penghuni->tanggal_masuk ? \Carbon\Carbon::parse($penghuni->tanggal_masuk)->diffForHumans(null, true) : '-' }}
+                                @if($penghuni && $penghuni->tanggal_masuk)
+                                    @php
+                                        // Hitung selisih hari dari tanggal masuk ke hari ini
+                                        $hari = \Carbon\Carbon::parse($penghuni->tanggal_masuk)->startOfDay()->diffInDays(now()->startOfDay());
+                                    @endphp
+                                    
+                                    @if($hari == 0)
+                                        <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">Penghuni Baru (Hari ini)</span>
+                                    @elseif($hari >= 30)
+                                        {{ floor($hari / 30) }} Bulan {{ $hari % 30 }} Hari
+                                    @else
+                                        {{ $hari }} Hari
+                                    @endif
+                                @else
+                                    -
+                                @endif
                             </span>
                         </div>
                     </div>
