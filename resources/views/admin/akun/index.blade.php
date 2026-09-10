@@ -249,7 +249,12 @@
                                     {{ substr(Auth::user()->name ?? 'P', 0, 1) }}
                                 @endif
                             </div>
-                            <span class="text-xs font-bold text-slate-800 hidden sm:inline-block truncate max-w-[100px]">{{ Auth::user()->name ?? 'Pak Lalan' }}</span>
+                            
+                                <div>
+                                <span class="text-xs font-bold text-slate-800 hidden sm:inline-block truncate max-w-[100px]">{{ Auth::user()->name ?? 'Pak Lalan' }}</span>
+                                <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Administrator</span>
+                            </div>
+
                             <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
                         </button>
 
