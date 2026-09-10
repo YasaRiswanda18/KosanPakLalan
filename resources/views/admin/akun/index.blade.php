@@ -90,7 +90,7 @@
 
     <div class="flex h-screen w-full overflow-hidden">
         
-       <!-- ========================================== -->
+        <!-- ========================================== -->
         <!-- SIDEBAR ADMIN (MODERN MINIMALIST) -->
         <!-- ========================================== -->
         <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 w-72 bg-white border-r border-slate-200/80 flex flex-col justify-between h-full z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-xl lg:shadow-none">
@@ -119,17 +119,11 @@
                 <!-- Navigasi Menu -->
                 <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
                     
-                    <!-- RUMUS NOTIFIKASI ADMIN -->
-                    @php
-                        $notifTagihanAdmin = \App\Models\Tagihan::where('status', 'Menunggu Konfirmasi')->count();
-                        $notifKeluhanAdmin = \App\Models\Pengaduan::where('status', 'Pending')->count();
-                    @endphp
-
                     <div class="px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                         Menu Utama
                     </div>
 
-                    <!-- Dashboard (Aktif) -->
+                    <!-- Dashboard -->
                     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
                         <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.dashboard') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
@@ -153,7 +147,7 @@
                         <span>Data Penghuni</span>
                     </a>
                     
-                    <!-- Tagihan & Kas (DENGAN NOTIFIKASI) -->
+                    <!-- Tagihan & Kas (DENGAN NOTIFIKASI GLOBAL) -->
                     <a href="{{ route('admin.tagihan.index') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.tagihan.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
                         <div class="flex items-center gap-3">
                             <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.tagihan.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -161,13 +155,14 @@
                             </svg>
                             <span>Tagihan & Kas</span>
                         </div>
-                        @if($notifTagihanAdmin > 0)
-                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full animate-pulse shadow-xs">
+                        @if(($notifTagihanAdmin ?? 0) > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full shadow-xs">
                                 {{ $notifTagihanAdmin }}
                             </span>
                         @endif
                     </a>
 
+                    <!-- Laporan Keluhan (DENGAN NOTIFIKASI GLOBAL) -->
                     <a href="{{ route('admin.pengaduan.index') }}" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.pengaduan.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
                         <div class="flex items-center gap-3">
                             <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.pengaduan.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -175,7 +170,7 @@
                             </svg>
                             <span>Laporan Keluhan</span>
                         </div>
-                        @if($notifKeluhanAdmin > 0)
+                        @if(($notifKeluhanAdmin ?? 0) > 0)
                             <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full animate-pulse shadow-xs">
                                 {{ $notifKeluhanAdmin }}
                             </span>
@@ -186,7 +181,7 @@
                         Sistem
                     </div>
 
-                    <!-- Kelola Akun -->
+                    <!-- Kelola Akun (Aktif) -->
                     <a href="{{ route('admin.akun.index') }}" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 {{ request()->routeIs('admin.akun.*') ? 'bg-slate-900 text-white shadow-sm shadow-slate-900/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80' }}">
                         <svg class="w-5 h-5 shrink-0 {{ request()->routeIs('admin.akun.*') ? 'text-white' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
@@ -246,16 +241,17 @@
                                 @if(Auth::user()->foto_profil)
                                     <img src="{{ asset('storage/profil/' . Auth::user()->foto_profil) }}" alt="Profil" class="w-full h-full object-cover rounded-xl">
                                 @else
-                                    {{ substr(Auth::user()->name ?? 'P', 0, 1) }}
+                                    {{ strtoupper(substr(Auth::user()->name ?? 'P', 0, 1)) }}
                                 @endif
                             </div>
                             
-                                <div>
-                                <span class="text-xs font-bold text-slate-800 hidden sm:inline-block truncate max-w-[100px]">{{ Auth::user()->name ?? 'Pak Lalan' }}</span>
+                            <!-- PERBAIKAN: Flex Column biar Atas Bawah -->
+                            <div class="hidden sm:flex flex-col text-left">
+                                <span class="text-xs font-bold text-slate-800 truncate max-w-[100px] leading-tight">{{ Auth::user()->name ?? 'Pak Lalan' }}</span>
                                 <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Administrator</span>
                             </div>
 
-                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                            <svg class="w-3.5 h-3.5 text-slate-400 hidden sm:block ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
                         </button>
 
                         <div id="profilDropdown" class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden hidden opacity-0 transition-all duration-200 transform origin-top-right scale-95 z-50">
