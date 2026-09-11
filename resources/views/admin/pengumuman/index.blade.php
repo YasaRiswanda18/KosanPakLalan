@@ -91,8 +91,8 @@
                     <!-- RUMUS NOTIFIKASI ADMIN -->
                     @php
                         // 1. Hitung Tagihan yang butuh divalidasi
-                        $notifTagihanAdmin = \App\Models\Tagihan::where('status', 'Menunggu')->count();
-
+                        $notifTagihanAdmin = \App\Models\Tagihan::where('status', 'Menunggu Konfirmasi')->count();
+                        
                         // 2. Hitung SEMUA Keluhan yang BUKAN "Selesai" (Notif anti-hilang sebelum beres!)
                         $notifKeluhanAdmin = \App\Models\Pengaduan::where('status', '!=', 'Selesai')->count();
                     @endphp
