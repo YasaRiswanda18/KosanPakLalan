@@ -265,7 +265,16 @@
             <tr>
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td><strong>{{ $t->penghuni->nama ?? 'Penghuni Telah Dihapus' }}</strong></td>
-                <td>{{ $t->penghuni && $t->penghuni->kamar ? 'Kamar ' . $t->penghuni->kamar->nomor_kamar : 'Kosong' }}</td>
+                
+                <!-- PERBAIKAN: Kolom Unit Kamar untuk Multi-Kamar -->
+                <td>
+                    @if($t->penghuni && $t->penghuni->kamars->count() > 0)
+                        {{ $t->penghuni->kamars->pluck('nomor_kamar')->map(function($k) { return \Illuminate\Support\Str::startsWith(strtolower(trim($k)), 'kamar') ? trim($k) : 'Kamar ' . trim($k); })->join(', ') }}
+                    @else
+                        Kosong
+                    @endif
+                </td>
+
                 <td>{{ $t->bulan_tagihan }}</td>
                 <td class="text-right" style="font-weight: 700;">Rp {{ number_format($t->jumlah_bayar, 0, ',', '.') }}</td>
                 <td class="text-center">
