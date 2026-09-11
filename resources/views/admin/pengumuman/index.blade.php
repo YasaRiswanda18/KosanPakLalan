@@ -68,9 +68,7 @@
                 <!-- Brand Header -->
                 <div class="h-20 flex items-center justify-between px-6 border-b border-slate-100">
                     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 group">
-                        <div class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-base shadow-sm group-hover:bg-slate-800 transition-colors shrink-0">
-                            KL
-                        </div>
+                        <div class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-base shadow-sm group-hover:bg-slate-800 transition-colors shrink-0">KL</div>
                         <div class="flex flex-col">
                             <span class="font-bold text-base text-slate-900 tracking-tight leading-none group-hover:text-slate-700 transition-colors">KOSAN LALAN</span>
                             <span class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Portal Admin</span>
