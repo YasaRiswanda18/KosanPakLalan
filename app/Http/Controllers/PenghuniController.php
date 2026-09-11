@@ -131,6 +131,14 @@ class PenghuniController extends Controller
             'pekerjaan' => $request->pekerjaan,
         ]);
 
+        // 👇 PERBAIKAN SINKRONISASI AKUN 
+        if ($penghuni->user) {
+            $penghuni->user->update([
+                'name' => $request->nama
+            ]);
+        }
+        // 👆 ======================================================= 👆
+
         return redirect()->route('admin.penghuni.index')->with('success', 'Mantap! Data penghuni berhasil diperbarui.');
     }
 
