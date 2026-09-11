@@ -115,6 +115,12 @@
                                 ->whereIn('status', ['Belum Lunas', 'Ditolak'])
                                 ->count();
                         }
+
+                        // 2. Hitung Notif Pengumuman (LANGSUNG CEK KE TABEL PIVOT)
+                        $jumlahPengumuman = \App\Models\Pengumuman::where('status', 'Aktif')
+                            ->whereDoesntHave('users', function($q) use ($user) {
+                                $q->where('user_id', $user->id)->whereNotNull('read_at');
+                            })->count();
                     @endphp
 
                     <div class="px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
