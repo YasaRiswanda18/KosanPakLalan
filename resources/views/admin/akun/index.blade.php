@@ -118,6 +118,12 @@
 
                 <!-- Navigasi Menu -->
                 <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+
+                <!-- RUMUS NOTIFIKASI ADMIN -->
+                    @php
+                        $notifTagihanAdmin = \App\Models\Tagihan::where('status', 'Menunggu Konfirmasi')->count();
+                        $notifKeluhanAdmin = \App\Models\Pengaduan::where('status', '!=', 'Selesai')->count();
+                    @endphp
                     
                     <div class="px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                         Menu Utama
