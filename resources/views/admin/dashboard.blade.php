@@ -113,13 +113,10 @@
                <!-- Navigasi Menu -->
                 <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
                     
-                    <!-- RUMUS NOTIFIKASI ADMIN (DIPERBAIKI) -->
+                    <!-- RUMUS NOTIFIKASI ADMIN -->
                     @php
-                        // 1. Hitung Tagihan yang butuh divalidasi
-                        $notifTagihanAdmin = \App\Models\Tagihan::where('status', 'Menunggu')->count();
-
-                        // 2. Hitung SEMUA Keluhan yang BUKAN "Selesai" (Notif anti-hilang sebelum beres!)
-                        $notifKeluhanAdmin = \App\Models\Pengaduan::where('status', '!=', 'Selesai')->count();
+                        $notifTagihanAdmin = \App\Models\Tagihan::where('status', 'Menunggu Konfirmasi')->count();
+                        $notifKeluhanAdmin = \App\Models\Pengaduan::where('status', 'Pending')->count();
                     @endphp
 
                     <div class="px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
@@ -540,6 +537,10 @@
                                     <span>{{ $adu->created_at->diffForHumans() }}</span>
                                 </div>
                                 <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed">{{ $adu->deskripsi }}</p>
+                            </div>
+                            <div class="text-[11px] text-slate-400 pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                                <span class="font-medium text-slate-600">Kamar {{ $adu->penghuni && $adu->penghuni->kamar ? $adu->penghuni->kamar->nomor_kamar : '-' }}</span>
+                                <span>{{ $adu->created_at->diffForHumans() }}</span>
                             </div>
                         </div>
                         @empty
