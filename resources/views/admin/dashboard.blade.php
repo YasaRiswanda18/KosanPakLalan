@@ -633,12 +633,12 @@
             new Chart(revCtx, {
                 type: 'line',
                 data: {
-               // 1. UBAH LABELS BULANNYA DI SINI
-                    labels: ['Ags', 'Sep', 'Okt', 'Nov', 'Des', 'Jan'], 
+                    // 1. Ubah label jadi 6 bulan terakhir, ujungnya di bulan ini (Sep)
+                    labels: ['Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep'], 
                     datasets: [{
                         label: 'Pemasukan',
-                        // 2. TARUH VARIABEL PEMASUKAN DI DEPAN (AGUSTUS), SISANYA DUMMY/NOL
-                        data: [{{ $pemasukan }}, 0, 0, 0, 0, 0], 
+                        // 2. Taruh variabel pemasukan di urutan PALING AKHIR (ke-6)
+                        data: [0, 0, 0, 0, 0, {{ $pemasukan }}], 
                         borderColor: '#10B981', // Emerald-500
                         backgroundColor: 'rgba(16, 185, 129, 0.1)', // Efek gradient bawah garis
                         borderWidth: 3,
