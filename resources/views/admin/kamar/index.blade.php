@@ -349,7 +349,7 @@
                         </div>
                         <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                             <span>Okupansi</span>
-                            <span class="font-semibold text-sky-600">{{ $totalKamar > 0 ? round(($kamarTerisi / $totalKamar) * 100) : 0 }}% Terisi</span>
+                            <span class="font-semibold text-sky-600">{{ $persentaseOkupansi }}% Terisi</span>
                         </div>
                     </div>
 
@@ -429,10 +429,10 @@
                     </div>
                 </div>
 
-                <!-- FULL VIEW TABLE (SATU-SATUNYA TAMPILAN SEKARANG) -->
+                <!-- FULL VIEW TABLE -->
                 <div id="kamarTableView" class="bg-white rounded-3xl border border-slate-200/80 shadow-md overflow-hidden animate-fade-in delay-3">
-                            <div class="overflow-x-auto min-h-[450px]">
-                                <table id="kamarTable" class="w-full min-w-[1000px] text-left border-collapse table-fixed">
+                    <div class="overflow-x-auto min-h-[450px]">
+                        <table id="kamarTable" class="w-full min-w-[1000px] text-left border-collapse table-fixed">
                             <thead>
                                 <tr class="border-b border-slate-100 bg-slate-50/75 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                                     <th class="py-4 px-6 w-[15%]">No. Kamar</th>
@@ -502,24 +502,19 @@
                                         @endif
                                     </td> 
                                     
-                                    <!-- PERBAIKAN: Kolom Nama Penghuni yang Mendukung Fitur Yasa/Anton -->
                                     <td class="py-4 px-6">
                                         @if($kamar->status == 'Terisi' && $kamar->penghuni)
                                             <div class="flex items-center gap-3">
-                                                <!-- Avatar Profil Singkatan Nama -->
                                                 <div class="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200/60 text-slate-700 flex items-center justify-center text-xs font-bold shrink-0 shadow-sm group-hover:bg-slate-900 group-hover:text-white transition-all">
                                                     {{ strtoupper(substr($kamar->nama_penghuni_asli ?? $kamar->penghuni->nama, 0, 2)) }}
                                                 </div>
                                                 
-                                                <!-- Detail Nama & Kontak -->
                                                 <div class="flex flex-col">
                                                     <span class="font-bold text-slate-900 text-xs sm:text-sm leading-tight">
                                                         {{ $kamar->nama_penghuni_asli ?? $kamar->penghuni->nama }}
                                                     </span>
                                                     <span class="text-[11px] text-slate-500 font-medium mt-0.5">
                                                         {{ $kamar->penghuni->nomor_hp ?? '-' }} 
-                                                        
-                                                        {{-- Kalau ada status kekerabatan, tampilkan --}}
                                                         @if($kamar->kekerabatan)
                                                             <span class="text-emerald-600 font-bold ml-1">({{ $kamar->kekerabatan }})</span>
                                                         @endif
@@ -535,11 +530,11 @@
                                     
                                     <td class="py-4 px-6 text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            <!-- Tombol Edit -->
-                                            <button type="button" onclick="openEditModal({{ $kamar->id }}, '{{ addslashes($kamar->nomor_kamar) }}', '{{ $kamar->tipe_kamar }}', {{ $kamar->harga }}, '{{ $kamar->status }}')" class="p-2 rounded-xl bg-slate-50 hover:bg-slate-900 text-slate-600 hover:text-white border border-slate-200/80 transition-all shadow-2xs" title="Edit Kamar">
+                                            <!-- PERBAIKAN: Parameter openEditModal dikurangi (murni untuk edit Nomor, Tipe, Harga aja) -->
+                                            <button type="button" onclick="openEditModal({{ $kamar->id }}, '{{ addslashes($kamar->nomor_kamar) }}', '{{ $kamar->tipe_kamar }}', {{ $kamar->harga }})" class="p-2 rounded-xl bg-slate-50 hover:bg-slate-900 text-slate-600 hover:text-white border border-slate-200/80 transition-all shadow-2xs" title="Edit Kamar">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
                                             </button>
-                                            <!-- Tombol Hapus -->
+                                            
                                             <button type="button" onclick="openDeleteModal({{ $kamar->id }}, '{{ addslashes($kamar->nomor_kamar) }}')" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200/80 transition-all shadow-2xs" title="Hapus Kamar">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
                                             </button>
@@ -556,7 +551,6 @@
                     </div>
                 </div>
 
-                <!-- Pesan Kosong Kalau Filter/Search Nggak Ketemu -->
                 <div id="noResultsMessage" class="hidden py-16 text-center bg-white rounded-3xl border border-slate-200/80 shadow-sm p-8 animate-fade-in">
                     <div class="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 mx-auto mb-4">
                         <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
@@ -639,7 +633,7 @@
         </div>
     </div>
 
-    <!-- MODAL EDIT KAMAR -->
+    <!-- MODAL EDIT KAMAR (TAMPILAN BARU TANPA STATUS) -->
     <div id="modalEditBox" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex min-h-screen items-center justify-center p-4 cursor-pointer" onclick="closeEditModal()">
             <div class="bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden modal-enter w-full max-w-lg p-6 sm:p-8 cursor-default" onclick="event.stopPropagation()">
@@ -650,7 +644,7 @@
                         </div>
                         <div>
                             <h3 class="text-lg font-extrabold text-slate-900 tracking-tight">Edit Data Kamar</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Perbarui nomor, tipe, tarif sewa, atau status kamar.</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Perbarui nomor, tipe, atau tarif sewa kamar.</p>
                         </div>
                     </div>
                     <button type="button" onclick="closeEditModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors">
@@ -691,13 +685,7 @@
                             <input type="number" id="editHarga" name="harga" required class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-colors cursor-text caret-slate-900">
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Status <span class="text-rose-500">*</span></label>
-                        <select id="editStatusKamar" name="status" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-colors cursor-pointer">
-                            <option value="Kosong">Kosong (Siap Huni)</option>
-                            <option value="Terisi">Terisi</option>
-                        </select>
-                    </div>
+
                     <div class="flex items-center gap-3 pt-4 border-t border-slate-100 mt-6">
                         <button type="button" onclick="closeEditModal()" class="w-1/3 py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-all">Batal</button>
                         <button type="submit" class="w-2/3 py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
@@ -853,16 +841,18 @@
         }
         function closeModal() { hideModal('modalBox'); }
 
-        function openEditModal(id, nomor, tipe, harga, status) {
+        // PERBAIKAN: Fungsi Edit Kamar (Murni cuma Nomor, Tipe, Harga. Status diurus sistem)
+        function openEditModal(id, nomor, tipe, harga) {
             document.getElementById('formEditKamar').action = `/admin/kamar/${id}`;
             document.getElementById('editNomor').value = nomor;
+            
             if (tipe === 'VIP') {
                 document.getElementById('editTipeVIP').checked = true;
             } else {
                 document.getElementById('editTipeStandar').checked = true;
             }
             document.getElementById('editHarga').value = harga;
-            document.getElementById('editStatusKamar').value = status;
+
             showModal('modalEditBox');
         }
         function closeEditModal() { hideModal('modalEditBox'); }

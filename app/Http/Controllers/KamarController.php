@@ -42,7 +42,7 @@ class KamarController extends Controller
             'nomor_kamar' => $request->nomor_kamar,
             'tipe_kamar'  => $request->tipe_kamar,
             'harga'       => $request->harga,
-            'status'      => 'Kosong', // Default otomatis kosong
+            'status'      => 'Kosong', // Default otomatis kosong saat baru dibuat
         ]);
 
         return redirect()->route('admin.kamar.index')->with('success', 'Mantap! Kamar baru berhasil ditambahkan.');
@@ -53,11 +53,11 @@ class KamarController extends Controller
     // ==========================================
     public function update(Request $request, $id)
     {
+        // PERBAIKAN: Validasi 'status' dihapus karena sudah tidak dikirim dari form
         $request->validate([
             'nomor_kamar' => 'required|string|unique:kamars,nomor_kamar,' . $id,
             'tipe_kamar'  => 'required|in:Standar,VIP',
             'harga'       => 'required|numeric|min:0',
-            'status'      => 'required|in:Kosong,Terisi',
         ], [
             'nomor_kamar.required' => 'Nomor kamar wajib diisi!',
             'nomor_kamar.unique'   => 'Nomor kamar ini sudah ada di sistem!',
@@ -66,14 +66,14 @@ class KamarController extends Controller
 
         $kamar = Kamar::findOrFail($id);
 
+        // PERBAIKAN: Update murni hanya Nomor, Tipe, dan Harga. Status tidak disentuh.
         $kamar->update([
             'nomor_kamar' => $request->nomor_kamar,
             'tipe_kamar'  => $request->tipe_kamar,
             'harga'       => $request->harga,
-            'status'      => $request->status,
         ]);
 
-        return redirect()->route('admin.kamar.index')->with('success', 'Wushh! Data kamar berhasil diperbarui.');
+        return redirect()->route('admin.kamar.index')->with('success', 'Wushh! Data kamar berhasil diperbarui tanpa mengganggu status hunian.');
     }
 
     // ==========================================
