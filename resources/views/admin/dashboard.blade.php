@@ -633,14 +633,15 @@
             new Chart(revCtx, {
                 type: 'line',
                 data: {
-                    // 1. Ubah label jadi 6 bulan terakhir, ujungnya di bulan ini (Sep)
-                    labels: ['Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep'], 
+                    // Balikin lagi bulannya mulai dari Agustus
+                    labels: ['Ags', 'Sep', 'Okt', 'Nov', 'Des', 'Jan'], 
                     datasets: [{
                         label: 'Pemasukan',
-                        // 2. Taruh variabel pemasukan di urutan PALING AKHIR (ke-6)
-                        data: [0, 0, 0, 0, 0, {{ $pemasukan }}], 
+                        // GESER POSISINYA KE INDEX KE-2 (Untuk bulan September)
+                        // Ags(0), Sep(Pemasukan), Okt(0), Nov(0), Des(0), Jan(0)
+                        data: [0, {{ $pemasukan }}, 0, 0, 0, 0], 
                         borderColor: '#10B981', // Emerald-500
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)', // Efek gradient bawah garis
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)', 
                         borderWidth: 3,
                         pointBackgroundColor: '#10B981',
                         pointBorderColor: '#0F172A',
@@ -648,7 +649,7 @@
                         pointRadius: 4,
                         pointHoverRadius: 6,
                         fill: true,
-                        tension: 0.4 // Bikin garisnya melengkung smooth
+                        tension: 0.4 
                     }]
                 },
                 options: {
@@ -676,7 +677,7 @@
                             ticks: { color: '#64748B', font: { size: 10, family: "'Plus Jakarta Sans', sans-serif" } }
                         },
                         y: {
-                            display: false, // Disembunyikan biar desainnya bersih & estetik
+                            display: false, 
                             min: 0
                         }
                     }
